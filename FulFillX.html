@@ -1073,6 +1073,27 @@
         .he-day-btn:hover { border-color: var(--accent); color: var(--accent); }
         .he-day-btn.active { background: var(--accent); color: var(--bg-card); border-color: var(--accent); }
 
+        /* ── V1.3 PHASE 5: HISTORY ─────────────────────────────── */
+        .history-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .history-month-label { font-family:'Baloo 2',sans-serif; font-size:17px; font-weight:700; color:var(--heading-primary); }
+        .history-nav-btn { width:36px; height:36px; border-radius:50%; border:1.5px solid var(--border-card); background:var(--bg-card); font-size:18px; color:var(--heading-primary); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .history-nav-btn:active { transform:scale(.92); }
+        .month-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:14px; }
+        .month-day-header { font-family:'Fredoka',sans-serif; font-size:10px; color:var(--body-muted); text-align:center; padding:2px 0 5px; }
+        .month-day-cell { aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative; transition:background .15s; }
+        .month-day-cell.empty { cursor:default; pointer-events:none; }
+        .month-day-cell.future .month-day-num { color:var(--body-muted); opacity:.4; }
+        .month-day-cell.today { box-shadow:0 0 0 2px var(--accent); }
+        .month-day-cell.selected { background:var(--accent-soft); box-shadow:0 0 0 2px var(--accent); }
+        .month-day-cell:active:not(.empty) { opacity:.75; }
+        .month-day-cell img { width:100%; height:100%; object-fit:cover; }
+        .month-day-num { font-family:'Fredoka',sans-serif; font-size:12px; color:var(--body-text); }
+        .month-day-cell.has-entry .month-day-num { font-weight:600; color:var(--accent); }
+        .day-detail-card { background:var(--bg-card); border-radius:18px; padding:16px; border:1.5px solid var(--border-card); margin-bottom:12px; }
+        .day-detail-chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+        .day-detail-chip { font-family:'Fredoka',sans-serif; font-size:12px; padding:3px 10px; border-radius:20px; }
+        .day-detail-label { font-family:'Baloo 2',sans-serif; font-size:11px; font-weight:600; color:var(--heading-secondary); text-transform:uppercase; letter-spacing:.6px; margin-bottom:3px; }
+
         /* ── V1.3 PHASE 2: FAB + TO-DO SHEET ───────────────────── */
         .todo-fab {
             display: none;
@@ -1297,6 +1318,23 @@
                 </div>
             </div>
 
+            <!-- HISTORY -->
+            <div class="screen" id="history">
+                <div class="tab-top">
+                    <h2 class="screen-header">History</h2>
+                    <p class="screen-subtext">Browse and fill in past days</p>
+                </div>
+                <div class="scrollable-content">
+                    <div class="history-nav">
+                        <button class="history-nav-btn" onclick="app.prevHistoryMonth()">‹</button>
+                        <span id="history-month-label" class="history-month-label"></span>
+                        <button class="history-nav-btn" onclick="app.nextHistoryMonth()">›</button>
+                    </div>
+                    <div class="month-grid" id="history-grid"></div>
+                    <div id="history-detail"></div>
+                </div>
+            </div>
+
             <!-- TOOLBOX -->
             <div class="screen" id="toolbox">
                 <div class="tab-top">
@@ -1497,6 +1535,9 @@
             <button class="nav-item" onclick="app.switchTab('insights', this)">
                 <span class="nav-icon">📊</span><span>Insights</span>
             </button>
+            <button class="nav-item" id="nav-history" onclick="app.switchTab('history', this)">
+                <span class="nav-icon">📅</span><span>History</span>
+            </button>
         </div>
 
         <div class="toast" id="toast">Saved! ✓</div>
@@ -1583,6 +1624,7 @@
             init() {
                 this.getConfig();
                 this.getHabits();
+                this.initHistory();
                 this.initTheme();
                 this.updateGreeting();
                 this.updateQuote();
@@ -1784,9 +1826,10 @@
                         break;
 
                     case 'habits': {
-                        const todayDow = new Date().getDay();
+                        const journalDate = this._journalDate || this.getTodayKey();
+                        const journalDow  = new Date(journalDate + 'T00:00:00').getDay();
                         const scheduled = this.getHabits().filter(
-                            h => h.active && h.slots.includes(journalType) && h.days.includes(todayDow)
+                            h => h.active && h.slots.includes(journalType) && h.days.includes(journalDow)
                         );
                         if (!scheduled.length) {
                             box.innerHTML = `${title}<p class="habit-empty">No habits scheduled — add some in the Habits tab.</p>`;
@@ -1859,7 +1902,7 @@
             },
 
             syncHabit(habitId, checked) {
-                const today = this.getTodayKey();
+                const today = this._journalDate || this.getTodayKey();
                 const entries = this.getEntries();
                 if (!entries[today]) entries[today] = {};
                 if (!entries[today].habits) entries[today].habits = {};
@@ -1967,6 +2010,7 @@
                 if (el) el.classList.add('active');
                 if (tab === 'insights') this.renderInsights();
                 if (tab === 'habits')   this.renderHabits();
+                if (tab === 'history')  this.renderHistory();
                 // FAB is home-only
                 const fab = document.getElementById('todoFab');
                 if (fab) {
@@ -2019,14 +2063,14 @@
             },
 
             saveJournal(type) {
-                const today = this.getTodayKey();
+                const today = this._journalDate || this.getTodayKey();
                 const entries = this.getEntries();
                 if (!entries[today]) entries[today] = {};
 
                 if (type === 'morning' || type === 'evening') {
                     const config = this.getConfig();
                     const data = {};
-                    const todayDow = new Date().getDay();
+                    const todayDow = new Date(today + 'T00:00:00').getDay();
                     if (!entries[today].habits) entries[today].habits = {};
                     (config[type] || []).forEach(w => {
                         if (w.type === 'habits') {
@@ -2051,7 +2095,7 @@
                     };
                     // Merge daytime habit checkboxes into shared entries[date].habits
                     if (!entries[today].habits) entries[today].habits = {};
-                    const todayDow = new Date().getDay();
+                    const todayDow = new Date().getDay(); // daytime always uses real today
                     this.getHabits().filter(h => h.active && h.slots.includes('daytime') && h.days.includes(todayDow))
                         .forEach(h => {
                             const cb = document.getElementById('daytime-h-' + h.id);
@@ -2063,11 +2107,12 @@
                 this.showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} saved! ✓`);
                 this.updateCompletionBadges();
                 this.updateTodoFab();
+                if (this._historySelectedDate === today) this._renderDayDetail(today);
                 this.closeJournal();
             },
 
             loadJournalData(type) {
-                const today = this.getTodayKey();
+                const today = this._journalDate || this.getTodayKey();
                 const entries = this.getEntries();
                 const todayData = entries[today] || {};
 
@@ -2075,7 +2120,7 @@
                     const config = this.getConfig();
                     const data = todayData[type] || {};
                     const habitsData = todayData.habits || {};
-                    const todayDow = new Date().getDay();
+                    const todayDow = new Date(today + 'T00:00:00').getDay();
                     (config[type] || []).forEach(w => {
                         if (w.type === 'goalreview') {
                             const goal = todayData.morning?.maingoal || '';
@@ -2549,6 +2594,179 @@
 
             closeWidgetEditor() {
                 document.getElementById('widgetEditor').classList.remove('active');
+            },
+
+            /* ── V1.3 PHASE 5: HISTORY ────────────────────────── */
+            _historyYear:  null,
+            _historyMonth: null,
+            _historySelectedDate: null,
+
+            initHistory() {
+                const now = new Date();
+                this._historyYear  = now.getFullYear();
+                this._historyMonth = now.getMonth();
+                this._historySelectedDate = this.getTodayKey();
+            },
+
+            renderHistory() {
+                if (this._historyYear === null) this.initHistory();
+                this._renderMonthGrid();
+                this._renderDayDetail(this._historySelectedDate);
+            },
+
+            prevHistoryMonth() {
+                if (this._historyMonth === 0) { this._historyYear--; this._historyMonth = 11; }
+                else this._historyMonth--;
+                this._renderMonthGrid();
+            },
+
+            nextHistoryMonth() {
+                if (this._historyMonth === 11) { this._historyYear++; this._historyMonth = 0; }
+                else this._historyMonth++;
+                this._renderMonthGrid();
+            },
+
+            _renderMonthGrid() {
+                const year  = this._historyYear;
+                const month = this._historyMonth;
+                const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                const label = document.getElementById('history-month-label');
+                if (label) label.textContent = `${MONTHS[month]} ${year}`;
+
+                const firstDow   = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const today      = this.getTodayKey();
+                const entries    = this.getEntries();
+
+                const DAY_HDRS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+                let html = DAY_HDRS.map(d => `<div class="month-day-header">${d}</div>`).join('');
+
+                // Blank offset cells
+                for (let i = 0; i < firstDow; i++) html += '<div class="month-day-cell empty"></div>';
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const date = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    const isToday    = date === today;
+                    const isFuture   = date > today;
+                    const isSelected = date === this._historySelectedDate;
+                    const hasEntry   = !!(entries[date] && (entries[date].morning || entries[date].evening || entries[date].daytime));
+                    const hasP       = this.hasPhoto(date);
+
+                    let cls = 'month-day-cell';
+                    if (isToday)    cls += ' today';
+                    if (isSelected) cls += ' selected';
+                    if (hasEntry)   cls += ' has-entry';
+                    if (isFuture)   cls += ' future';
+
+                    const inner = hasP
+                        ? `<img src="" data-date="${date}" alt="photo">`
+                        : `<span class="month-day-num">${d}</span>`;
+                    html += `<div class="${cls}" data-date="${date}" onclick="app._selectHistoryDay('${date}')">${inner}</div>`;
+                }
+
+                const grid = document.getElementById('history-grid');
+                if (grid) {
+                    grid.innerHTML = html;
+                    this._loadGridPhotos();
+                }
+            },
+
+            _loadGridPhotos() {
+                document.querySelectorAll('#history-grid img[data-date]').forEach(img => {
+                    this.getPhoto(img.dataset.date).then(url => { if (url) img.src = url; });
+                });
+            },
+
+            _selectHistoryDay(date) {
+                this._historySelectedDate = date;
+                document.querySelectorAll('#history-grid .month-day-cell').forEach(c => {
+                    c.classList.toggle('selected', c.dataset.date === date);
+                });
+                this._renderDayDetail(date);
+            },
+
+            openHistoryOnDate(date) {
+                if (this._historyYear === null) this.initHistory();
+                const [y, m] = date.split('-').map(Number);
+                this._historyYear  = y;
+                this._historyMonth = m - 1;
+                this._historySelectedDate = date;
+                this.switchTab('history', document.getElementById('nav-history'));
+            },
+
+            _renderDayDetail(date) {
+                const container = document.getElementById('history-detail');
+                if (!container || !date) return;
+
+                const entries  = this.getEntries();
+                const dayData  = entries[date] || {};
+                const today    = this.getTodayKey();
+                const isPast   = date < today;
+
+                const [y, m, d] = date.split('-').map(Number);
+                const dateLabel = new Date(y, m-1, d).toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+
+                const morningDone = dayData.morning && Object.keys(dayData.morning).length > 0;
+                const eveningDone = dayData.evening && Object.keys(dayData.evening).length > 0;
+                const daytimeDone = !!dayData.daytime;
+                const hasAny      = morningDone || eveningDone || daytimeDone;
+
+                // Journal chips
+                const chips = [['Morning', morningDone], ['Daytime', daytimeDone], ['Evening', eveningDone]].map(([label, done]) =>
+                    `<span class="day-detail-chip" style="background:${done ? 'var(--accent)' : 'var(--accent-soft)'};color:${done ? 'var(--bg-card)' : 'var(--body-muted)'}">${label}</span>`
+                ).join('');
+
+                // Main goal
+                const mainGoal  = dayData.morning?.maingoal || '';
+                const goalChoice = dayData.evening?.goalreview?.choice || '';
+                const goalHtml  = mainGoal ? `<div style="margin-bottom:10px">
+                    <div class="day-detail-label">Main Goal</div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:14px;color:var(--body-text)">${this._esc(mainGoal)}</div>
+                    ${goalChoice ? `<div style="font-size:12px;color:var(--body-muted);margin-top:2px">Worked toward it: ${goalChoice}</div>` : ''}
+                </div>` : '';
+
+                // Reflection snippet
+                const refl = dayData.evening?.reflection || '';
+                const reflHtml = refl ? `<div style="margin-bottom:10px">
+                    <div class="day-detail-label">Reflection</div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-text);line-height:1.5">${this._esc(refl.length > 140 ? refl.slice(0,140) + '…' : refl)}</div>
+                </div>` : '';
+
+                // Habits
+                const habitsDone = Object.values(dayData.habits || {}).filter(Boolean).length;
+                const habitsHtml = habitsDone ? `<div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:8px">${habitsDone} habit${habitsDone !== 1 ? 's' : ''} completed</div>` : '';
+
+                // Photo placeholder (filled async)
+                const photoPlaceholder = this.hasPhoto(date)
+                    ? `<img data-date="${date}" src="" alt="Day photo" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;margin-bottom:12px">`
+                    : '';
+
+                // Backfill invite / fill-in buttons
+                let fillHtml = '';
+                if (isPast && !hasAny) {
+                    fillHtml = `<div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);text-align:center;padding:4px 0 8px">No entry for this day — fill it in?</div>
+                        <button class="save-btn" style="margin-top:0" onclick="app.openJournal('morning','${date}')">Fill in Morning</button>
+                        <button class="save-btn" style="margin-top:8px;background:transparent;color:var(--accent);box-shadow:none;border:1.5px solid var(--accent-border)" onclick="app.openJournal('evening','${date}')">Fill in Evening</button>`;
+                } else if (isPast && !eveningDone) {
+                    fillHtml = `<button class="save-btn" style="margin-top:8px" onclick="app.openJournal('evening','${date}')">Add Evening entry</button>`;
+                } else if (isPast && !morningDone) {
+                    fillHtml = `<button class="save-btn" style="margin-top:8px" onclick="app.openJournal('morning','${date}')">Add Morning entry</button>`;
+                }
+
+                container.innerHTML = `<div class="day-detail-card">
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:15px;font-weight:600;color:var(--heading-primary);margin-bottom:10px">${dateLabel}</div>
+                    ${photoPlaceholder}
+                    <div class="day-detail-chips">${chips}</div>
+                    ${goalHtml}${reflHtml}${habitsHtml}
+                    ${fillHtml}
+                </div>`;
+
+                if (this.hasPhoto(date)) {
+                    this.getPhoto(date).then(url => {
+                        const img = container.querySelector('img[data-date]');
+                        if (img && url) img.src = url;
+                    });
+                }
             },
 
             /* ── V1.3 PHASE 4: PHOTO STORE (IndexedDB) ────────── */
