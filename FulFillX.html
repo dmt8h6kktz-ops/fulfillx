@@ -998,6 +998,80 @@
             gap: 8px;
             margin-top: 8px;
         }
+
+        /* ── PHASE 3: HABITS MANAGER ─────────────────────────────── */
+        .habit-editor-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-page);
+            z-index: 55;
+            flex-direction: column;
+        }
+        .habit-editor-overlay.active { display: flex; }
+
+        .habit-manager-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-card);
+            gap: 8px;
+        }
+        .habit-manager-item:last-of-type { border-bottom: none; }
+
+        .habit-manager-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        .habit-manager-icon { font-size: 22px; flex-shrink: 0; }
+
+        .habit-manager-name {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--heading-primary);
+        }
+        .habit-schedule-summary {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 12px;
+            color: var(--body-muted);
+            margin-top: 1px;
+        }
+        .habit-manager-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+        .he-slot-options { display: flex; gap: 14px; flex-wrap: wrap; }
+        .he-slot-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            color: var(--body-text);
+            cursor: pointer;
+        }
+        .he-slot-option input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+
+        .he-day-shortcuts { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+        .he-day-toggles { display: flex; gap: 4px; }
+        .he-day-btn {
+            flex: 1;
+            padding: 8px 0;
+            border-radius: 8px;
+            border: 1.5px solid var(--border-card);
+            background: transparent;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--body-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .he-day-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .he-day-btn.active { background: var(--accent); color: var(--bg-card); border-color: var(--accent); }
     </style>
 </head>
 <body>
@@ -1207,6 +1281,54 @@
         </div>
 
         <div class="toast" id="toast">Saved! ✓</div>
+
+        <!-- HABIT EDITOR OVERLAY -->
+        <div class="habit-editor-overlay" id="habitEditor">
+            <div class="settings-topbar">
+                <button class="gear-btn" onclick="app.closeHabitEditor()" aria-label="Back">←</button>
+                <h2 class="settings-title" id="he-heading">Add Habit</h2>
+                <div style="width:40px"></div>
+            </div>
+            <div class="scrollable-content" style="padding:16px">
+                <div class="we-field">
+                    <label class="we-label">Habit name</label>
+                    <input type="text" id="he-name" class="hours-input" placeholder="e.g. Meditation">
+                </div>
+                <div class="we-field">
+                    <label class="we-label">Icon (emoji)</label>
+                    <input type="text" id="he-icon" class="hours-input" placeholder="✨" maxlength="4">
+                </div>
+                <div class="we-field">
+                    <label class="we-label">Time of day</label>
+                    <div class="he-slot-options">
+                        <label class="he-slot-option"><input type="checkbox" class="he-slot-cb" value="morning"> Morning</label>
+                        <label class="he-slot-option"><input type="checkbox" class="he-slot-cb" value="daytime"> Daytime</label>
+                        <label class="he-slot-option"><input type="checkbox" class="he-slot-cb" value="evening"> Evening</label>
+                    </div>
+                </div>
+                <div class="we-field">
+                    <label class="we-label">Days</label>
+                    <div class="he-day-shortcuts">
+                        <button class="theme-btn" style="padding:8px;font-size:12px" onclick="app.setHabitDays([0,1,2,3,4,5,6])">Every day</button>
+                        <button class="theme-btn" style="padding:8px;font-size:12px" onclick="app.setHabitDays([1,2,3,4,5])">Weekdays</button>
+                        <button class="theme-btn" style="padding:8px;font-size:12px" onclick="app.setHabitDays([0,6])">Weekends</button>
+                    </div>
+                    <div class="he-day-toggles">
+                        <button class="he-day-btn" data-day="0" onclick="app.toggleHabitDay(this)">Su</button>
+                        <button class="he-day-btn" data-day="1" onclick="app.toggleHabitDay(this)">Mo</button>
+                        <button class="he-day-btn" data-day="2" onclick="app.toggleHabitDay(this)">Tu</button>
+                        <button class="he-day-btn" data-day="3" onclick="app.toggleHabitDay(this)">We</button>
+                        <button class="he-day-btn" data-day="4" onclick="app.toggleHabitDay(this)">Th</button>
+                        <button class="he-day-btn" data-day="5" onclick="app.toggleHabitDay(this)">Fr</button>
+                        <button class="he-day-btn" data-day="6" onclick="app.toggleHabitDay(this)">Sa</button>
+                    </div>
+                </div>
+                <div class="we-actions">
+                    <button class="save-btn" style="margin-top:0" onclick="app.saveHabitEditor()">Save habit</button>
+                    <button class="theme-btn" style="padding:12px" onclick="app.closeHabitEditor()">Cancel</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1587,6 +1709,7 @@
                 document.getElementById(tab).classList.add('active');
                 if (el) el.classList.add('active');
                 if (tab === 'insights') this.renderInsights();
+                if (tab === 'habits')   this.renderHabits();
             },
 
             openSettings() {
@@ -1803,23 +1926,122 @@
                 ).join('');
             },
 
+            /* ── HABITS MANAGER ───────────────────────────────────── */
             renderHabits() {
-                document.getElementById('habits-content').innerHTML = `
-                    <div class="widget-box">
-                        <div class="widget-title">Your Active Habits</div>
-                        <div class="habit-check"><span>✓</span> Meditation</div>
-                        <div class="habit-check"><span>✓</span> Gym</div>
-                        <div class="habit-check"><span>✓</span> Reading</div>
-                        <div class="habit-check"><span>✓</span> Book Club</div>
-                        <div class="habit-check"><span>✓</span> Language Study</div>
-                    </div>
-                    <div style="padding-bottom: 20px;">
-                        <p class="screen-subtext" style="margin-top:16px;font-size:14px;">Try a new habit</p>
-                        <div class="widget-box"><div class="widget-title">Morning Pages</div><div class="widget-prompt">10 min • Creative writing</div></div>
-                        <div class="widget-box"><div class="widget-title">Cold Shower</div><div class="widget-prompt">5 min • Physical wellness</div></div>
-                        <div class="widget-box"><div class="widget-title">Stretch Routine</div><div class="widget-prompt">10 min • Movement</div></div>
-                    </div>
-                `;
+                const habits = this.getHabits().filter(h => h.active);
+                const container = document.getElementById('habits-content');
+                if (!habits.length) {
+                    container.innerHTML = `
+                        <div class="widget-box">
+                            <p class="habit-empty" style="text-align:center;padding:6px 0">No habits yet — add your first one.</p>
+                        </div>
+                        <button class="add-widget-btn" style="margin-bottom:12px" onclick="app.showAddHabit()">+ Add habit</button>`;
+                    return;
+                }
+                container.innerHTML = `
+                    <div class="widget-box" style="padding-bottom:4px">
+                        <div class="widget-title" style="margin-bottom:10px">Your habits</div>
+                        ${habits.map(h => `
+                            <div class="habit-manager-item">
+                                <div class="habit-manager-info">
+                                    <span class="habit-manager-icon">${h.icon}</span>
+                                    <div>
+                                        <div class="habit-manager-name">${h.name}</div>
+                                        <div class="habit-schedule-summary">${this.scheduleSummary(h)}</div>
+                                    </div>
+                                </div>
+                                <div class="habit-manager-actions">
+                                    <button class="cust-action-btn" onclick="app.editHabit('${h.id}')">Edit</button>
+                                    <button class="cust-action-btn del" onclick="app.removeHabit('${h.id}')">Remove</button>
+                                </div>
+                            </div>`).join('')}
+                        <button class="add-widget-btn" style="margin-top:8px" onclick="app.showAddHabit()">+ Add habit</button>
+                    </div>`;
+            },
+
+            scheduleSummary(h) {
+                const slotLabel = { morning: 'Morning', daytime: 'Daytime', evening: 'Evening' };
+                const slots = (h.slots || []).map(s => slotLabel[s] || s).join(' & ');
+                const DAY = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                const d = (h.days || []).slice().sort((a,b)=>a-b);
+                let days;
+                if (d.length === 7) days = 'Every day';
+                else if (d.join() === '1,2,3,4,5') days = 'Weekdays';
+                else if (d.join() === '0,6') days = 'Weekends';
+                else days = d.map(n => DAY[n]).join(', ');
+                return `${slots} · ${days}`;
+            },
+
+            showAddHabit() {
+                this._editingHabitId = null;
+                document.getElementById('he-heading').textContent = 'Add Habit';
+                document.getElementById('he-name').value = '';
+                document.getElementById('he-icon').value = '';
+                document.querySelectorAll('.he-slot-cb').forEach(cb => cb.checked = false);
+                this.setHabitDays([0,1,2,3,4,5,6]);
+                document.getElementById('habitEditor').classList.add('active');
+            },
+
+            editHabit(id) {
+                const h = this.getHabits().find(x => x.id === id);
+                if (!h) return;
+                this._editingHabitId = id;
+                document.getElementById('he-heading').textContent = 'Edit Habit';
+                document.getElementById('he-name').value = h.name;
+                document.getElementById('he-icon').value = h.icon;
+                document.querySelectorAll('.he-slot-cb').forEach(cb => cb.checked = h.slots.includes(cb.value));
+                this.setHabitDays(h.days);
+                document.getElementById('habitEditor').classList.add('active');
+            },
+
+            closeHabitEditor() {
+                document.getElementById('habitEditor').classList.remove('active');
+            },
+
+            setHabitDays(days) {
+                document.querySelectorAll('.he-day-btn').forEach(btn =>
+                    btn.classList.toggle('active', days.includes(parseInt(btn.dataset.day))));
+            },
+
+            toggleHabitDay(btn) {
+                btn.classList.toggle('active');
+            },
+
+            getHabitDays() {
+                return Array.from(document.querySelectorAll('.he-day-btn.active'))
+                    .map(b => parseInt(b.dataset.day)).sort((a,b) => a-b);
+            },
+
+            saveHabitEditor() {
+                const name  = document.getElementById('he-name').value.trim();
+                const icon  = document.getElementById('he-icon').value.trim() || '✨';
+                const slots = Array.from(document.querySelectorAll('.he-slot-cb:checked')).map(cb => cb.value);
+                const days  = this.getHabitDays();
+                if (!name)         { this.showToast('Please enter a habit name'); return; }
+                if (!slots.length) { this.showToast('Pick at least one time slot'); return; }
+                if (!days.length)  { this.showToast('Pick at least one day'); return; }
+
+                const habits = this.getHabits();
+                if (this._editingHabitId) {
+                    const h = habits.find(x => x.id === this._editingHabitId);
+                    if (h) Object.assign(h, { name, icon, slots, days });
+                } else {
+                    habits.push({ id: 'h_' + Date.now(), name, icon, slots, days, active: true });
+                }
+                this.saveHabits(habits);
+                this.closeHabitEditor();
+                this.renderHabits();
+                this.showToast(this._editingHabitId ? 'Habit updated' : 'Habit added');
+            },
+
+            removeHabit(id) {
+                if (!confirm('Remove this habit? It will disappear from journals, but past history is kept.')) return;
+                const habits = this.getHabits();
+                const h = habits.find(x => x.id === id);
+                if (h) h.active = false;
+                this.saveHabits(habits);
+                this.renderHabits();
+                this.showToast('Habit removed');
             },
 
             renderInsights() {
