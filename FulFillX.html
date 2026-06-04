@@ -1166,6 +1166,41 @@
             margin-top: 4px;
         }
 
+        /* ── V1.3 PHASE 3: REMINDERS ────────────────────────────── */
+        .reminder-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0 6px 32px;
+            flex-wrap: wrap;
+        }
+        .reminder-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 12px;
+            color: var(--body-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+        .reminder-toggle input[type="checkbox"] {
+            width: 14px; height: 14px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+        .reminder-lead {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 12px;
+            padding: 3px 7px;
+            border: 1.5px solid var(--input-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            cursor: pointer;
+        }
+        .reminder-lead:focus { outline: none; border-color: var(--accent); }
+
         /* ── V1.3 PHASE 1: TODO WIDGETS ─────────────────────────── */
         .todo-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-card); }
         .todo-item:last-child { border-bottom:none; }
@@ -1507,6 +1542,7 @@
                 this.updateCompletionBadges();
                 this.renderInsights();
                 this.updateTodoFab();
+                this._startReminderPoller();
                 setInterval(() => this.updateGreeting(), 60000);
             },
 
@@ -2461,6 +2497,83 @@
                 document.getElementById('widgetEditor').classList.remove('active');
             },
 
+            /* ── V1.3 PHASE 3: REMINDERS ──────────────────────── */
+            _reminderToggle(widgetId, idx, enabled) {
+                const items = this._widgetItems[widgetId];
+                if (!items || idx >= items.length) return;
+                if (!items[idx].reminder) items[idx].reminder = { enabled: false, lead: 'attime' };
+                items[idx].reminder.enabled = enabled;
+                if (enabled) this._requestNotificationPermission();
+                this._renderTodoList(widgetId, 'schedule');
+            },
+
+            _reminderLead(widgetId, idx, lead) {
+                const items = this._widgetItems[widgetId];
+                if (!items || idx >= items.length) return;
+                if (!items[idx].reminder) items[idx].reminder = { enabled: true, lead: 'attime' };
+                items[idx].reminder.lead = lead;
+            },
+
+            _requestNotificationPermission() {
+                if (!('Notification' in window)) return;
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
+            },
+
+            _startReminderPoller() {
+                // Fires every 30 s while app is open; shows Web Notification or toast.
+                // NATIVE HOOK: When Capacitor is added, replace this interval with
+                // LocalNotifications.schedule() calls reading each item's reminder intent.
+                this._firedReminders = this._firedReminders || new Set();
+                setInterval(() => {
+                    const today = this.getTodayKey();
+                    const entries = this.getEntries();
+                    const config  = this.getConfig();
+                    const now = new Date();
+                    const hhmm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+                    ['morning','evening'].forEach(journal => {
+                        (config[journal] || []).forEach(w => {
+                            if (w.type !== 'schedule') return;
+                            const arr = entries[today]?.[journal]?.[w.id];
+                            if (!Array.isArray(arr)) return;
+                            arr.forEach((item, idx) => {
+                                if (!item.time || !item.reminder?.enabled || item.done) return;
+                                const fireTime = this._computeFireTime(item.time, item.reminder.lead);
+                                const key = `${w.id}-${idx}-${fireTime}`;
+                                if (this._firedReminders.has(key)) return;
+                                if (hhmm >= fireTime && hhmm <= fireTime.replace(/(\d{2}):(\d{2})/, (_, h, m) => {
+                                    const tot = parseInt(h)*60+parseInt(m)+1;
+                                    return String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');
+                                })) {
+                                    this._firedReminders.add(key);
+                                    this._fireReminder(item);
+                                }
+                            });
+                        });
+                    });
+                }, 30000);
+            },
+
+            _computeFireTime(timeStr, lead) {
+                const [h, m] = timeStr.split(':').map(Number);
+                let mins = h * 60 + m;
+                if (lead === '15min')  mins -= 15;
+                else if (lead === '1hour') mins -= 60;
+                if (mins < 0) mins = 0;
+                return String(Math.floor(mins/60)).padStart(2,'0') + ':' + String(mins%60).padStart(2,'0');
+            },
+
+            _fireReminder(item) {
+                const msg = `Reminder: ${item.text}`;
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('FulFillX', { body: msg, icon: '' });
+                } else {
+                    this.showToast('🔔 ' + msg);
+                }
+            },
+
             /* ── V1.3 PHASE 2: FAB + TO-DO SHEET ─────────────── */
             _getTodayTodoItems() {
                 const today = this.getTodayKey();
@@ -2606,11 +2719,23 @@
                     let html = '';
                     timed.forEach(item => {
                         const i = items.indexOf(item);
+                        const rem = item.reminder || { enabled: false, lead: 'attime' };
+                        const reminderHtml = `<div class="reminder-row">
+                            <label class="reminder-toggle">
+                                <input type="checkbox" ${rem.enabled ? 'checked' : ''}
+                                    onchange="app._reminderToggle('${widgetId}',${i},this.checked)"> Remind me
+                            </label>
+                            ${rem.enabled ? `<select class="reminder-lead" onchange="app._reminderLead('${widgetId}',${i},this.value)">
+                                <option value="attime"  ${rem.lead==='attime'  ? 'selected' : ''}>At time</option>
+                                <option value="15min"   ${rem.lead==='15min'   ? 'selected' : ''}>15 min before</option>
+                                <option value="1hour"   ${rem.lead==='1hour'   ? 'selected' : ''}>1 hour before</option>
+                            </select>` : ''}
+                        </div>`;
                         html += `<div class="todo-item">
                             <button class="todo-check${item.done ? ' done' : ''}" onclick="app._todoToggle('${widgetId}','schedule',${i})">${item.done ? '✓' : ''}</button>
                             <span class="time-pill">${this._esc(item.time)}</span>
                             <span class="todo-text${item.done ? ' done' : ''}">${this._esc(item.text)}</span>
-                        </div>`;
+                        </div>${reminderHtml}`;
                     });
                     if (anytime.length) {
                         if (timed.length) html += `<div class="todo-group-heading">Anytime</div>`;
