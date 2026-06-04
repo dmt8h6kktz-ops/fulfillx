@@ -1073,6 +1073,60 @@
         .he-day-btn:hover { border-color: var(--accent); color: var(--accent); }
         .he-day-btn.active { background: var(--accent); color: var(--bg-card); border-color: var(--accent); }
 
+        /* ── V1.3 PHASE 6: HOME WEEK STRIP ─────────────────────── */
+        .week-strip {
+            display: flex;
+            gap: 4px;
+            padding: 12px 20px 0;
+            flex-shrink: 0;
+        }
+        .week-day {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        .week-day-label {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10px;
+            color: var(--body-muted);
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+        .week-day.current .week-day-label {
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .week-day-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .week-day.current .week-day-circle {
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+        .week-day-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .week-day-num {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 13px;
+            color: var(--body-text);
+        }
+        .week-day.current .week-day-num {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
         /* ── V1.3 PHASE 5: HISTORY ─────────────────────────────── */
         .history-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
         .history-month-label { font-family:'Baloo 2',sans-serif; font-size:17px; font-weight:700; color:var(--heading-primary); }
@@ -1290,9 +1344,9 @@
                     <p class="brand-mark">FULFILL<span>X</span></p>
                     <button class="gear-btn" onclick="app.openSettings()" aria-label="Settings">⚙</button>
                 </div>
+                <div class="week-strip" id="weekStrip"></div>
                 <div class="home-body">
                     <h1 class="greeting-text" id="greeting">Good morning</h1>
-                    <p class="time-text" id="time-period">Tuesday, June 3</p>
                     <p class="quote-text" id="daily-quote-text">"The only way to do great work is to love what you do."</p>
                     <p class="quote-author" id="daily-quote-author">— Steve Jobs</p>
                     <div class="home-spacer"></div>
@@ -1634,6 +1688,7 @@
                 this.updateCompletionBadges();
                 this.renderInsights();
                 this.updateTodoFab();
+                this.renderWeekStrip();
                 this._startReminderPoller();
                 setInterval(() => this.updateGreeting(), 60000);
             },
@@ -1658,23 +1713,24 @@
                 if (hour < 12) greeting.textContent = 'Good morning';
                 else if (hour < 17) greeting.textContent = 'Good afternoon';
                 else greeting.textContent = 'Good evening';
-
-                const now = new Date();
-                document.getElementById('time-period').textContent =
-                    now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             },
 
             updateQuote() {
+                // VERIFIED QUOTE SEED — expand only with genuine, correctly attributed quotes.
+                // TODO: add more quotes only after verifying against a reliable primary source.
                 const quotes = [
-                    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-                    { text: "Be kind to yourself. You're doing the best you can.", author: "Unknown" },
-                    { text: "Progress over perfection.", author: "Unknown" },
-                    { text: "Every moment is a fresh beginning.", author: "T.S. Eliot" },
-                    { text: "You are worthy. You are enough.", author: "Unknown" },
-                    { text: "Growth happens outside your comfort zone.", author: "Unknown" },
-                    { text: "Today is a good day to have a good day.", author: "Unknown" },
-                    { text: "Small steps still move you forward.", author: "Unknown" },
-                    { text: "What you do every day matters more than what you do once in a while.", author: "Gretchen Rubin" }
+                    { text: "Your time is limited, so don't waste it living someone else's life.", author: "Steve Jobs" },
+                    { text: "We suffer more often in imagination than in reality.", author: "Seneca" },
+                    { text: "The journey of a thousand miles begins with a single step.", author: "Lao Tzu" },
+                    { text: "When we are no longer able to change a situation, we are challenged to change ourselves.", author: "Viktor E. Frankl" },
+                    { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+                    { text: "You have power over your mind — not outside events. Realize this, and you will find strength.", author: "Marcus Aurelius" },
+                    { text: "The unexamined life is not worth living.", author: "Socrates" },
+                    { text: "He who has a why to live can bear almost any how.", author: "Friedrich Nietzsche" },
+                    { text: "Do what you can, with what you have, where you are.", author: "Theodore Roosevelt" },
+                    { text: "Happiness is not something ready made. It comes from your own actions.", author: "Dalai Lama" },
+                    { text: "Act as if what you do makes a difference. It does.", author: "William James" },
+                    { text: "I have learned that people will forget what you said and did, but never how you made them feel.", author: "Maya Angelou" }
                 ];
                 // Use day of year so quote stays consistent through the day
                 const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
@@ -2596,6 +2652,41 @@
                 document.getElementById('widgetEditor').classList.remove('active');
             },
 
+            /* ── V1.3 PHASE 6: WEEK STRIP ─────────────────────── */
+            renderWeekStrip() {
+                const strip = document.getElementById('weekStrip');
+                if (!strip) return;
+                const now   = new Date();
+                const today = this.getTodayKey();
+                const dow   = now.getDay(); // 0=Sun
+
+                // Build the Sun–Sat week containing today
+                const days = [];
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(now);
+                    d.setDate(now.getDate() - dow + i);
+                    const dateStr = d.toISOString().split('T')[0];
+                    days.push({ date: dateStr, dayNum: d.getDate(), isCurrent: dateStr === today });
+                }
+
+                const DAY_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+                strip.innerHTML = days.map((day, i) => {
+                    const hasP = this.hasPhoto(day.date);
+                    const inner = hasP
+                        ? `<img src="" data-date="${day.date}" alt="">`
+                        : `<span class="week-day-num">${day.dayNum}</span>`;
+                    return `<div class="week-day${day.isCurrent ? ' current' : ''}" onclick="app.openHistoryOnDate('${day.date}')">
+                        <span class="week-day-label">${DAY_LABELS[i]}</span>
+                        <div class="week-day-circle">${inner}</div>
+                    </div>`;
+                }).join('');
+
+                // Load photos async
+                strip.querySelectorAll('img[data-date]').forEach(img => {
+                    this.getPhoto(img.dataset.date).then(url => { if (url) img.src = url; });
+                });
+            },
+
             /* ── V1.3 PHASE 5: HISTORY ────────────────────────── */
             _historyYear:  null,
             _historyMonth: null,
@@ -2815,6 +2906,7 @@
                             tx.oncomplete = () => {
                                 this._updatePhotoIndex(date, true);
                                 if (rowId) this._renderPhotoRow(rowId, date, dataUrl);
+                                this.renderWeekStrip();
                             };
                         });
                     };
@@ -2832,6 +2924,7 @@
                     tx.oncomplete = () => {
                         this._updatePhotoIndex(date, false);
                         if (rowId) this._renderPhotoRow(rowId, date, null);
+                        this.renderWeekStrip();
                     };
                 });
             },
