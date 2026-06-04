@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#EEF0F3">
+    <title>FulFillX — Helping you become You.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Fredoka:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ── DESIGN TOKENS ───────────────────────────────────────── */
+        :root {
+            /* Slate (light) defaults */
+            --bg-page:          #EEF0F3;
+            --bg-card:          #FFFFFF;
+            --border-card:      #E0E2E6;
+
+            --brand-text:       #4A4E57;
+            --brand-x-bg:       #2D3142;
+            --brand-x-text:     #FFFFFF;
+
+            --heading-primary:  #2D3142;
+            --heading-secondary:#8A8E97;
+
+            --quote-color:      #3D414C;
+            --quote-author:     #8A8E97;
+
+            --journal-title:    #2D3142;
+            --journal-desc:     #9A9EA7;
+
+            --nav-bg:           #FFFFFF;
+            --nav-border:       #E0E2E6;
+            --nav-item:         #B0B4BC;
+            --nav-active:       #2D3142;
+
+            --accent:           #2D3142;
+            --accent-soft:      rgba(45,49,66,0.07);
+            --accent-border:    rgba(45,49,66,0.18);
+
+            --input-bg:         #F8F9FA;
+            --input-border:     rgba(45,49,66,0.18);
+            --input-text:       #2D3142;
+
+            --close-bg:         rgba(0,0,0,0.06);
+            --close-color:      #8A8E97;
+
+            --body-text:        #4A4E57;
+            --body-muted:       #9A9EA7;
+        }
+
+        .theme-graphite {
+            --bg-page:          linear-gradient(180deg,#1E1E23 0%,#2A2A31 100%);
+            --bg-card:          #2E2E35;
+            --border-card:      #3A3A42;
+
+            --brand-text:       #9A9AA5;
+            --brand-x-bg:       #E8836F;
+            --brand-x-text:     #1E1E23;
+
+            --heading-primary:  #F0F0F4;
+            --heading-secondary:#7A7A85;
+
+            --quote-color:      #C5C5CE;
+            --quote-author:     #7A7A85;
+
+            --journal-title:    #E8836F;
+            --journal-desc:     #8A8A95;
+
+            --nav-bg:           #26262C;
+            --nav-border:       #3A3A42;
+            --nav-item:         #6A6A75;
+            --nav-active:       #E8836F;
+
+            --accent:           #E8836F;
+            --accent-soft:      rgba(232,131,111,0.12);
+            --accent-border:    rgba(232,131,111,0.28);
+
+            --input-bg:         #26262C;
+            --input-border:     rgba(232,131,111,0.22);
+            --input-text:       #F0F0F4;
+
+            --close-bg:         rgba(255,255,255,0.08);
+            --close-color:      #7A7A85;
+
+            --body-text:        #C5C5CE;
+            --body-muted:       #7A7A85;
+        }
+
+        /* ── RESET ───────────────────────────────────────────────── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Fredoka', sans-serif;
+            background: #1E1E23;
+            overflow: hidden;
+        }
+
+        /* ── LAYOUT ──────────────────────────────────────────────── */
+        .app-container {
+            width: 100%;
+            height: 100vh;
+            max-width: 440px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-page);
+        }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header-section {
+            padding: 44px 24px 0;
+            flex-shrink: 0;
+        }
+
+        /* ── BRAND ───────────────────────────────────────────────── */
+        .brand-mark {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--brand-text);
+            margin: 0 0 12px 0;
+        }
+
+        .brand-mark span {
+            color: var(--brand-x-text);
+            background: var(--brand-x-bg);
+            padding: 1px 6px;
+            border-radius: 6px;
+            margin-left: 1px;
+        }
+
+        /* ── GREETING / DATE ─────────────────────────────────────── */
+        .greeting-text {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--heading-primary);
+            margin: 0 0 4px 0;
+            line-height: 1;
+        }
+
+        .time-text {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--heading-secondary);
+            margin: 0 0 32px 0;
+            letter-spacing: 0.3px;
+        }
+
+        /* ── QUOTE ───────────────────────────────────────────────── */
+        .daily-quote {
+            padding: 0 24px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .quote-text {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--quote-color);
+            line-height: 1.5;
+            margin: 0 0 8px 0;
+        }
+
+        .quote-author {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--quote-author);
+            margin: 0;
+        }
+
+        /* ── SCROLLABLE AREA ─────────────────────────────────────── */
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scrollable-content::-webkit-scrollbar { width: 0; }
+
+        /* .screen visibility controlled by Phase 3 rules below */
+
+        /* ── JOURNAL BOXES (home) ────────────────────────────────── */
+        .journal-boxes {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 16px;
+        }
+
+        .journal-box {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            min-height: 80px;
+            position: relative;
+            overflow: hidden;
+            border: 1.5px solid var(--border-card);
+            display: flex;
+            align-items: center;
+        }
+
+        .journal-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .journal-box:active { transform: scale(0.97); }
+
+        .journal-box.completed {
+            border-color: rgba(76,175,80,0.45);
+        }
+
+        .journal-icon {
+            font-size: 30px;
+            margin-right: 16px;
+            display: inline-block;
+            animation: bounce 2.5s ease-in-out infinite;
+        }
+
+        .journal-box:nth-child(2) .journal-icon { animation-delay: 0.3s; }
+        .journal-box:nth-child(3) .journal-icon { animation-delay: 0.6s; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .journal-title {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--journal-title);
+            margin: 0 0 2px 0;
+        }
+
+        .journal-desc {
+            font-size: 12px;
+            color: var(--journal-desc);
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .completion-check {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: #4CAF50;
+            color: white;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 3px 10px rgba(76,175,80,0.4);
+            animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        /* ── SCREEN HEADERS (Toolbox, Habits, Insights) ──────────── */
+        .screen-header {
+            font-family: 'Baloo 2', sans-serif;
+            color: var(--heading-primary);
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+        }
+
+        .screen-subtext {
+            color: var(--body-muted);
+            font-size: 13px;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        /* ── TOOLBOX ─────────────────────────────────────────────── */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding-bottom: 20px;
+        }
+
+        .tool-card {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 16px 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            border: 1.5px solid var(--border-card);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+        .tool-card:active { transform: scale(0.95); }
+
+        .tool-icon { font-size: 26px; margin-bottom: 8px; }
+        .tool-name {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--journal-title);
+            line-height: 1.1;
+            margin-bottom: 2px;
+        }
+        .tool-desc { font-size: 11px; color: var(--body-muted); line-height: 1.3; font-weight: 400; }
+
+        /* ── JOURNAL DETAIL MODAL ────────────────────────────────── */
+        .journal-detail {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 50;
+            align-items: flex-end;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        .journal-detail.active { display: flex; }
+
+        .journal-detail-content {
+            width: 100%;
+            background: var(--bg-page);
+            border-radius: 32px 32px 0 0;
+            padding: 24px 20px 32px;
+            max-height: 88vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .journal-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .journal-detail-title {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0;
+        }
+
+        .close-btn {
+            background: var(--close-bg);
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--close-color);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .close-btn:hover { transform: rotate(90deg); }
+
+        /* ── WIDGETS ─────────────────────────────────────────────── */
+        .widget-box {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1.5px solid var(--border-card);
+        }
+
+        .widget-title {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 0 0 8px 0;
+        }
+
+        .widget-prompt {
+            font-size: 13px;
+            color: var(--body-muted);
+            margin-bottom: 10px;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid var(--input-border);
+            border-radius: 12px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            background: var(--input-bg);
+            font-weight: 400;
+            color: var(--input-text);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .sleep-scale { display: flex; gap: 6px; margin-bottom: 10px; }
+
+        .scale-btn {
+            flex: 1;
+            padding: 10px;
+            background: var(--accent-soft);
+            border: 1.5px solid var(--accent-border);
+            border-radius: 10px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: var(--accent);
+        }
+        .scale-btn:hover { background: var(--accent-soft); filter: brightness(0.95); }
+        .scale-btn.active { background: var(--accent); color: var(--bg-card); border-color: var(--accent); }
+
+        .emoji-scale { display: flex; gap: 8px; margin: 8px 0; }
+        .emoji-btn {
+            flex: 1;
+            background: var(--accent-soft);
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            font-size: 28px;
+            padding: 8px;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+        .emoji-btn:hover { transform: scale(1.05); }
+        .emoji-btn.active {
+            transform: scale(1.1);
+            border-color: var(--accent);
+        }
+
+        .habit-check {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--body-text);
+        }
+        .habit-check input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+        .habit-check label { cursor: pointer; flex: 1; }
+        .habit-check span { color: #4CAF50; font-weight: 600; }
+
+        .hours-input {
+            width: 100%;
+            padding: 10px;
+            border: 1.5px solid var(--input-border);
+            border-radius: 10px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            background: var(--input-bg);
+            color: var(--input-text);
+        }
+        .hours-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            color: var(--bg-card);
+            border: none;
+            border-radius: 16px;
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+        }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+        .save-btn:active { transform: scale(0.98); }
+
+        /* ── INSIGHTS ────────────────────────────────────────────── */
+        .insight-stat {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border: 1.5px solid var(--border-card);
+        }
+        .insight-stat-label {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+        .insight-stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--heading-primary);
+            margin: 4px 0;
+        }
+        .insight-stat-desc { font-size: 12px; color: var(--body-muted); font-weight: 400; }
+
+        /* ── BOTTOM NAV ──────────────────────────────────────────── */
+        .bottom-nav {
+            display: flex;
+            background: var(--nav-bg);
+            border-top: 1px solid var(--nav-border);
+            margin-top: auto;
+            position: relative;
+            z-index: 10;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+
+        .nav-item {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--nav-item);
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .nav-item:active { transform: scale(0.92); }
+        .nav-item.active { color: var(--nav-active); }
+        .nav-icon { font-size: 20px; transition: transform 0.3s ease; }
+        .nav-item.active .nav-icon { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* ── TOAST ───────────────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #4CAF50;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 6px 20px rgba(76,175,80,0.4);
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ── PHASE 3: HOME LAYOUT ────────────────────────────────── */
+        .screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .screen.active { display: flex; }
+
+        #home {
+            overflow: hidden;
+        }
+
+        .home-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 48px 20px 0;
+            flex-shrink: 0;
+        }
+
+        .home-topbar .brand-mark { margin: 0; }
+
+        .gear-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 17px;
+            color: var(--heading-primary);
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        .gear-btn:hover { transform: rotate(20deg); }
+        .gear-btn:active { transform: scale(0.93); }
+
+        .home-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 20px 0;
+            overflow: hidden;
+        }
+
+        .home-body .greeting-text { font-size: 36px; margin: 0 0 2px 0; }
+        .home-body .time-text     { margin: 0 0 20px 0; }
+        .home-body .quote-text    { margin: 0 0 6px 0; }
+        .home-body .quote-author  { }
+
+        .home-spacer { flex: 1; min-height: 12px; }
+
+        .home-journals {
+            flex-shrink: 0;
+            padding-bottom: 12px;
+        }
+
+        .home-journals .journal-box { margin-bottom: 10px; }
+
+        .daytime-pill {
+            text-align: center;
+            margin: 4px auto 0;
+            padding: 9px 24px;
+            border: 1.5px dashed var(--border-card);
+            border-radius: 20px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 13px;
+            color: var(--body-muted);
+            cursor: pointer;
+            background: transparent;
+            display: block;
+            transition: all 0.2s;
+            letter-spacing: 0.2px;
+        }
+        .daytime-pill:hover { border-color: var(--accent); color: var(--accent); }
+        .daytime-pill.completed { border-color: rgba(76,175,80,0.5); color: #4CAF50; }
+
+        /* Tab screens (Toolbox / Habits / Insights) */
+        .tab-top {
+            padding: 44px 16px 0;
+            flex-shrink: 0;
+        }
+
+        /* ── PHASE 3: SETTINGS OVERLAY ──────────────────────────── */
+        .settings-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-page);
+            z-index: 60;
+            flex-direction: column;
+        }
+        .settings-overlay.active { display: flex; }
+
+        .settings-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 48px 20px 16px;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border-card);
+        }
+
+        .settings-title {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--heading-primary);
+        }
+
+        .settings-section {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .settings-section-label {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--heading-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 12px;
+        }
+
+        .theme-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .theme-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border-card);
+            background: transparent;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--body-text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .theme-btn.active {
+            background: var(--accent);
+            color: var(--bg-card);
+            border-color: var(--accent);
+        }
+
+        .settings-placeholder {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            color: var(--body-muted);
+            font-weight: 400;
+        }
+
+        .settings-overlay .scrollable-content { padding: 16px; }
+
+        /* ── PHASE 4: GOAL REVIEW ────────────────────────────────── */
+        .goal-review-goal {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--heading-primary);
+            background: var(--accent-soft);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            min-height: 38px;
+            line-height: 1.4;
+        }
+
+        .goal-review-q { margin-top: 12px; }
+
+        .goal-review-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .goal-review-btn {
+            flex: 1;
+            padding: 9px;
+            border-radius: 10px;
+            border: 1.5px solid var(--accent-border);
+            background: transparent;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .goal-review-btn:hover { background: var(--accent-soft); }
+        .goal-review-btn.active {
+            background: var(--accent);
+            color: var(--bg-card);
+            border-color: var(--accent);
+        }
+
+        /* ── PHASE 6: CUSTOMIZATION EDITOR ──────────────────────── */
+        .cust-journal-block { margin-bottom: 20px; }
+
+        .cust-journal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .cust-journal-name {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--heading-primary);
+        }
+
+        .cust-reset-btn {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 12px;
+            color: var(--body-muted);
+            background: none;
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+            padding: 3px 10px;
+            cursor: pointer;
+        }
+        .cust-reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .cust-widget-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-card);
+        }
+
+        .cust-widget-reorder {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .cust-reorder-btn {
+            background: var(--accent-soft);
+            border: none;
+            border-radius: 5px;
+            width: 26px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cust-reorder-btn:hover { background: var(--accent-border); }
+        .cust-reorder-btn:disabled { opacity: 0.3; cursor: default; }
+
+        .cust-widget-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cust-widget-type {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--bg-card);
+            background: var(--accent);
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin-right: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .cust-widget-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 13px;
+            color: var(--body-text);
+        }
+
+        .cust-widget-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .cust-action-btn {
+            background: var(--accent-soft);
+            border: none;
+            border-radius: 7px;
+            padding: 4px 9px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 12px;
+            color: var(--accent);
+            cursor: pointer;
+        }
+        .cust-action-btn:hover { background: var(--accent-border); }
+        .cust-action-btn.del { color: #e55; background: rgba(220,50,50,0.07); }
+        .cust-action-btn.del:hover { background: rgba(220,50,50,0.15); }
+
+        .add-widget-btn {
+            width: 100%;
+            margin-top: 8px;
+            padding: 9px;
+            border: 1.5px dashed var(--border-card);
+            border-radius: 10px;
+            background: transparent;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 13px;
+            color: var(--body-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .add-widget-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Widget Editor overlay */
+        .widget-editor-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-page);
+            z-index: 70;
+            flex-direction: column;
+        }
+        .widget-editor-overlay.active { display: flex; }
+
+        .widget-editor-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px 20px;
+        }
+
+        .widget-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 48px 0 16px;
+            border-bottom: 1px solid var(--border-card);
+            margin-bottom: 16px;
+        }
+
+        .we-field { margin-bottom: 14px; }
+
+        .we-label {
+            display: block;
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--heading-secondary);
+            margin-bottom: 5px;
+        }
+
+        .we-select {
+            width: 100%;
+            padding: 10px;
+            border: 1.5px solid var(--input-border);
+            border-radius: 10px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            background: var(--input-bg);
+            color: var(--input-text);
+        }
+
+        .we-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="appContainer">
+        <div class="content-wrapper">
+            <!-- HOME (non-scrolling flex layout) -->
+            <div class="screen active" id="home">
+                <div class="home-topbar">
+                    <p class="brand-mark">FULFILL<span>X</span></p>
+                    <button class="gear-btn" onclick="app.openSettings()" aria-label="Settings">⚙</button>
+                </div>
+                <div class="home-body">
+                    <h1 class="greeting-text" id="greeting">Good morning</h1>
+                    <p class="time-text" id="time-period">Tuesday, June 3</p>
+                    <p class="quote-text" id="daily-quote-text">"The only way to do great work is to love what you do."</p>
+                    <p class="quote-author" id="daily-quote-author">— Steve Jobs</p>
+                    <div class="home-spacer"></div>
+                    <div class="home-journals">
+                        <div class="journal-box" id="box-morning" onclick="app.openJournal('morning')">
+                            <span class="journal-icon">🌅</span>
+                            <div>
+                                <h3 class="journal-title">Morning</h3>
+                                <p class="journal-desc">Plan your day &amp; set intentions</p>
+                            </div>
+                        </div>
+                        <div class="journal-box" id="box-evening" onclick="app.openJournal('evening')">
+                            <span class="journal-icon">🌙</span>
+                            <div>
+                                <h3 class="journal-title">Evening</h3>
+                                <p class="journal-desc">Reflect on your day</p>
+                            </div>
+                        </div>
+                        <div class="daytime-pill" id="box-daytime" onclick="app.openJournal('daytime')">
+                            + Quick daytime check-in
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOOLBOX -->
+            <div class="screen" id="toolbox">
+                <div class="tab-top">
+                    <h2 class="screen-header">Toolbox</h2>
+                    <p class="screen-subtext">Tools for the moments you need them most</p>
+                </div>
+                <div class="scrollable-content">
+                    <div class="tool-grid" id="toolbox-grid"></div>
+                </div>
+            </div>
+
+            <!-- HABITS -->
+            <div class="screen" id="habits">
+                <div class="tab-top">
+                    <h2 class="screen-header">Habits</h2>
+                    <p class="screen-subtext">Discover new habits to try</p>
+                </div>
+                <div class="scrollable-content">
+                    <div id="habits-content"></div>
+                </div>
+            </div>
+
+            <!-- INSIGHTS -->
+            <div class="screen" id="insights">
+                <div class="tab-top">
+                    <h2 class="screen-header">Insights</h2>
+                    <p class="screen-subtext">Understanding your patterns</p>
+                </div>
+                <div class="scrollable-content">
+                    <div id="insights-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS OVERLAY -->
+        <div class="settings-overlay" id="settings">
+            <div class="settings-topbar">
+                <button class="gear-btn" onclick="app.closeSettings()" aria-label="Back">←</button>
+                <h2 class="settings-title">Settings</h2>
+                <div style="width:40px"></div>
+            </div>
+            <div class="scrollable-content">
+                <div class="settings-section">
+                    <div class="settings-section-label">Appearance</div>
+                    <div class="theme-options">
+                        <button class="theme-btn" id="theme-light" onclick="app.setTheme('light')">Light</button>
+                        <button class="theme-btn" id="theme-system" onclick="app.setTheme('system')">System</button>
+                        <button class="theme-btn" id="theme-dark" onclick="app.setTheme('dark')">Dark</button>
+                    </div>
+                </div>
+                <div class="settings-section" id="custSection">
+                    <div class="settings-section-label">Customize journals</div>
+
+                    <div class="cust-journal-block">
+                        <div class="cust-journal-header">
+                            <span class="cust-journal-name">Morning 🌅</span>
+                            <button class="cust-reset-btn" onclick="app.resetJournal('morning')">Reset</button>
+                        </div>
+                        <div id="cust-morning-list"></div>
+                        <button class="add-widget-btn" onclick="app.showAddWidget('morning')">+ Add widget</button>
+                    </div>
+
+                    <div class="cust-journal-block">
+                        <div class="cust-journal-header">
+                            <span class="cust-journal-name">Evening 🌙</span>
+                            <button class="cust-reset-btn" onclick="app.resetJournal('evening')">Reset</button>
+                        </div>
+                        <div id="cust-evening-list"></div>
+                        <button class="add-widget-btn" onclick="app.showAddWidget('evening')">+ Add widget</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WIDGET EDITOR (shown on top of Settings) -->
+        <div class="widget-editor-overlay" id="widgetEditor">
+            <div class="widget-editor-content">
+                <div class="widget-editor-header">
+                    <h3 class="settings-title" id="we-heading">Add Widget</h3>
+                    <button class="gear-btn" onclick="app.closeWidgetEditor()" aria-label="Close">✕</button>
+                </div>
+                <div class="we-field">
+                    <label class="we-label">Type</label>
+                    <select id="we-type" class="we-select" onchange="app.onWeTypeChange()">
+                        <option value="text">Text / journal prompt</option>
+                        <option value="maingoal">Main Goal (text)</option>
+                        <option value="sleep">Sleep (rating + hours)</option>
+                        <option value="scale">Rating scale</option>
+                        <option value="habits">Habits checklist</option>
+                        <option value="emoji">Emoji mood</option>
+                        <option value="goalreview">Goal Review</option>
+                    </select>
+                </div>
+                <div class="we-field">
+                    <label class="we-label">Title</label>
+                    <input type="text" id="we-title" class="hours-input" placeholder="Widget title">
+                </div>
+                <div class="we-field" id="we-prompt-row">
+                    <label class="we-label">Prompt</label>
+                    <input type="text" id="we-prompt" class="hours-input" placeholder="Prompt shown to user">
+                </div>
+                <div class="we-field" id="we-items-row" style="display:none">
+                    <label class="we-label">Items (comma-separated)</label>
+                    <input type="text" id="we-items" class="hours-input" placeholder="Item 1, Item 2, Item 3">
+                </div>
+                <div class="we-actions">
+                    <button class="save-btn" style="margin-top:0" onclick="app.saveWidgetEditor()">Save</button>
+                    <button class="theme-btn" style="padding:12px" onclick="app.closeWidgetEditor()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODALS -->
+        <div class="journal-detail" id="morningDetail">
+            <div class="journal-detail-content">
+                <div class="journal-detail-header">
+                    <h2 class="journal-detail-title">Morning 🌅</h2>
+                    <button class="close-btn" onclick="app.closeJournal()">✕</button>
+                </div>
+                <div id="morningWidgets"></div>
+                <button class="save-btn" onclick="app.saveJournal('morning')">Save Morning ✓</button>
+            </div>
+        </div>
+
+        <div class="journal-detail" id="daytimeDetail">
+            <div class="journal-detail-content">
+                <div class="journal-detail-header">
+                    <h2 class="journal-detail-title">Daytime ☀️</h2>
+                    <button class="close-btn" onclick="app.closeJournal()">✕</button>
+                </div>
+                <div class="widget-box">
+                    <div class="widget-title">How are you feeling?</div>
+                    <div class="emoji-scale" id="daytimeMood"></div>
+                    <input type="text" id="daytimeNote" class="hours-input" placeholder="Optional note..." style="margin-top:10px">
+                </div>
+                <button class="save-btn" onclick="app.saveJournal('daytime')">Save Check-in ✓</button>
+            </div>
+        </div>
+
+        <div class="journal-detail" id="eveningDetail">
+            <div class="journal-detail-content">
+                <div class="journal-detail-header">
+                    <h2 class="journal-detail-title">Evening 🌙</h2>
+                    <button class="close-btn" onclick="app.closeJournal()">✕</button>
+                </div>
+                <div id="eveningWidgets"></div>
+                <button class="save-btn" onclick="app.saveJournal('evening')">Save Evening ✓</button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="app.switchTab('home', this)">
+                <span class="nav-icon">🏠</span><span>Home</span>
+            </button>
+            <button class="nav-item" onclick="app.switchTab('toolbox', this)">
+                <span class="nav-icon">🧰</span><span>Toolbox</span>
+            </button>
+            <button class="nav-item" onclick="app.switchTab('habits', this)">
+                <span class="nav-icon">✓</span><span>Habits</span>
+            </button>
+            <button class="nav-item" onclick="app.switchTab('insights', this)">
+                <span class="nav-icon">📊</span><span>Insights</span>
+            </button>
+        </div>
+
+        <div class="toast" id="toast">Saved! ✓</div>
+    </div>
+
+    <script>
+        const DEFAULT_HABITS = [
+            { id: "h_meditate",  name: "Meditation",     icon: "🧘", slots: ["morning"],           days: [0,1,2,3,4,5,6], active: true },
+            { id: "h_reading",   name: "Reading",        icon: "📖", slots: ["evening"],           days: [0,1,2,3,4,5,6], active: true },
+            { id: "h_exercise",  name: "Exercise / Gym", icon: "💪", slots: ["daytime"],           days: [1,3,5],         active: true },
+            { id: "h_language",  name: "Language study", icon: "🗣️", slots: ["evening"],           days: [0,1,2,3,4,5,6], active: true },
+            { id: "h_walk",      name: "Walk",           icon: "🚶", slots: ["daytime"],           days: [0,1,2,3,4,5,6], active: true }
+        ];
+
+        const DEFAULT_CONFIG = {
+            morning: [
+                { id: "sleep",       type: "sleep",     title: "How did you sleep?",   config: { scaleMax: 5, numberLabel: "Hours slept" } },
+                { id: "gratitude",   type: "text",      title: "Gratitude",            config: { prompt: "What's one thing you're grateful for today?" } },
+                { id: "affirmation", type: "text",      title: "Affirmation",          config: { prompt: "What is one affirmation you can give yourself this morning?" } },
+                { id: "maingoal",    type: "maingoal",  title: "Main Goal of the Day", config: { prompt: "What do you want to move toward today?" } },
+                { id: "habits-am",   type: "habits",    title: "Morning Habits",       config: { items: ["Meditation","Read 10 min","Exercise"] } }
+            ],
+            evening: [
+                { id: "goalreview",  type: "goalreview", title: "Today's Main Goal",   config: {} },
+                { id: "reflection",  type: "text",      title: "Reflection",           config: { prompt: "What was a win today? What would you do differently?" } },
+                { id: "habits-pm",   type: "habits",    title: "Evening Habits",       config: { items: ["Reading","Book Club prep","Meditation"] } },
+                { id: "sleepintent", type: "text",      title: "Sleep Intention",      config: { prompt: "What will help you sleep well tonight?" } }
+            ]
+        };
+
+        const app = {
+            currentJournal: null,
+            goalReviewChoice: null,
+
+            init() {
+                this.getConfig();
+                this.getHabits();
+                this.initTheme();
+                this.updateGreeting();
+                this.updateQuote();
+                this.renderToolbox();
+                this.renderHabits();
+                this.renderEmojiScale();
+                this.updateCompletionBadges();
+                this.renderInsights();
+                setInterval(() => this.updateGreeting(), 60000);
+            },
+
+            initTheme() {
+                const saved = localStorage.getItem('fulfillx.theme') || 'system';
+                this.applyTheme(saved);
+            },
+
+            applyTheme(pref) {
+                const container = document.getElementById('appContainer');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const useDark = pref === 'dark' || (pref === 'system' && prefersDark);
+                container.classList.toggle('theme-graphite', useDark);
+                if (pref !== 'system') localStorage.setItem('fulfillx.theme', pref);
+                else localStorage.setItem('fulfillx.theme', 'system');
+            },
+
+            updateGreeting() {
+                const hour = new Date().getHours();
+                const greeting = document.getElementById('greeting');
+                if (hour < 12) greeting.textContent = 'Good morning';
+                else if (hour < 17) greeting.textContent = 'Good afternoon';
+                else greeting.textContent = 'Good evening';
+
+                const now = new Date();
+                document.getElementById('time-period').textContent =
+                    now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            },
+
+            updateQuote() {
+                const quotes = [
+                    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+                    { text: "Be kind to yourself. You're doing the best you can.", author: "Unknown" },
+                    { text: "Progress over perfection.", author: "Unknown" },
+                    { text: "Every moment is a fresh beginning.", author: "T.S. Eliot" },
+                    { text: "You are worthy. You are enough.", author: "Unknown" },
+                    { text: "Growth happens outside your comfort zone.", author: "Unknown" },
+                    { text: "Today is a good day to have a good day.", author: "Unknown" },
+                    { text: "Small steps still move you forward.", author: "Unknown" },
+                    { text: "What you do every day matters more than what you do once in a while.", author: "Gretchen Rubin" }
+                ];
+                // Use day of year so quote stays consistent through the day
+                const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+                const quote = quotes[dayOfYear % quotes.length];
+                document.getElementById('daily-quote-text').textContent = `"${quote.text}"`;
+                document.getElementById('daily-quote-author').textContent = `— ${quote.author}`;
+            },
+
+            /* ── CONFIG & ENTRIES ─────────────────────────────── */
+            getConfig() {
+                const stored = localStorage.getItem('fulfillx.config');
+                if (!stored) {
+                    const cfg = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+                    localStorage.setItem('fulfillx.config', JSON.stringify(cfg));
+                    return cfg;
+                }
+                return JSON.parse(stored);
+            },
+
+            saveConfig(config) {
+                localStorage.setItem('fulfillx.config', JSON.stringify(config));
+            },
+
+            getEntries() {
+                return JSON.parse(localStorage.getItem('fulfillx.entries') || '{}');
+            },
+
+            saveEntries(entries) {
+                localStorage.setItem('fulfillx.entries', JSON.stringify(entries));
+            },
+
+            /* ── HABIT STORE ──────────────────────────────────────── */
+            getHabits() {
+                const stored = localStorage.getItem('fulfillx.habits');
+                if (stored) return JSON.parse(stored);
+                // First run: try to migrate from fulfillx.config habit items
+                const migrated = this.migrateHabitsFromConfig();
+                if (migrated) {
+                    this.saveHabits(migrated);
+                    return migrated;
+                }
+                // No prior data — seed defaults
+                const defaults = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+                this.saveHabits(defaults);
+                return defaults;
+            },
+
+            saveHabits(habits) {
+                localStorage.setItem('fulfillx.habits', JSON.stringify(habits));
+            },
+
+            migrateHabitsFromConfig() {
+                const config = this.getConfig();
+                const amWidget = config.morning?.find(w => w.id === 'habits-am');
+                const pmWidget = config.evening?.find(w => w.id === 'habits-pm');
+                const amItems = amWidget?.config?.items || [];
+                const pmItems = pmWidget?.config?.items || [];
+                // If no items in config at all, nothing to migrate
+                if (!amItems.length && !pmItems.length) return null;
+
+                const nameMap = {};
+                const slugify = n => 'h_' + n.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+                amItems.forEach(name => {
+                    if (!nameMap[name]) nameMap[name] = { slots: [], days: [0,1,2,3,4,5,6], active: true };
+                    if (!nameMap[name].slots.includes('morning')) nameMap[name].slots.push('morning');
+                });
+                pmItems.forEach(name => {
+                    if (!nameMap[name]) nameMap[name] = { slots: [], days: [0,1,2,3,4,5,6], active: true };
+                    if (!nameMap[name].slots.includes('evening')) nameMap[name].slots.push('evening');
+                });
+
+                const habits = Object.entries(nameMap).map(([name, obj]) => ({
+                    id: slugify(name), name, icon: '✓', ...obj
+                }));
+
+                // Best-effort: migrate old completion data in fulfillx.entries
+                const entries = this.getEntries();
+                const nameToId = {};
+                habits.forEach(h => { nameToId[h.name] = h.id; });
+
+                Object.keys(entries).forEach(date => {
+                    const dayData = entries[date];
+                    const completed = {};
+                    ['morning', 'evening'].forEach(slot => {
+                        const wid = slot === 'morning' ? 'habits-am' : 'habits-pm';
+                        const old = dayData[slot]?.[wid];
+                        if (old && typeof old === 'object') {
+                            Object.entries(old).forEach(([itemName, val]) => {
+                                const hid = nameToId[itemName];
+                                if (hid && val) completed[hid] = true;
+                            });
+                        }
+                    });
+                    if (Object.keys(completed).length) {
+                        if (!dayData.habits) dayData.habits = {};
+                        Object.assign(dayData.habits, completed);
+                    }
+                });
+                this.saveEntries(entries);
+                return habits;
+            },
+
+            /* ── WIDGET ENGINE ────────────────────────────────── */
+            renderJournal(type) {
+                const config = this.getConfig();
+                const widgets = config[type] || [];
+                const container = document.getElementById(type + 'Widgets');
+                if (!container) return;
+                container.innerHTML = '';
+                widgets.forEach(w => container.appendChild(this.buildWidget(w, type)));
+            },
+
+            buildWidget(w, journalType) {
+                const box = document.createElement('div');
+                box.className = 'widget-box';
+                const title = `<div class="widget-title">${w.title}</div>`;
+                const prompt = w.config.prompt ? `<div class="widget-prompt">${w.config.prompt}</div>` : '';
+
+                switch (w.type) {
+                    case 'text':
+                        box.innerHTML = `${title}${prompt}<textarea id="w-${w.id}" placeholder="Write here..."></textarea>`;
+                        break;
+
+                    case 'maingoal':
+                        box.innerHTML = `${title}${prompt}<input type="text" id="w-${w.id}" class="hours-input" placeholder="My main goal today is...">`;
+                        break;
+
+                    case 'sleep': {
+                        const max = w.config.scaleMax || 5;
+                        const btns = Array.from({length: max}, (_, i) => i + 1).map(n =>
+                            `<button class="scale-btn" onclick="app.selectScale(this,'w-${w.id}-q')">${n}</button>`
+                        ).join('');
+                        box.innerHTML = `${title}<div class="sleep-scale" id="w-${w.id}-q">${btns}</div>
+                            <input type="number" id="w-${w.id}-h" placeholder="${w.config.numberLabel || 'Hours'}" class="hours-input" style="margin-top:8px" step="0.5" min="0" max="24">`;
+                        break;
+                    }
+
+                    case 'scale': {
+                        const max = w.config.scaleMax || 5;
+                        const btns = Array.from({length: max}, (_, i) => i + 1).map(n =>
+                            `<button class="scale-btn" onclick="app.selectScale(this,'w-${w.id}')">${n}</button>`
+                        ).join('');
+                        box.innerHTML = `${title}<div class="sleep-scale" id="w-${w.id}">${btns}</div>`;
+                        break;
+                    }
+
+                    case 'number':
+                        box.innerHTML = `${title}<input type="number" id="w-${w.id}" class="hours-input" placeholder="${w.config.label || ''}">`;
+                        break;
+
+                    case 'habits': {
+                        const checks = (w.config.items || []).map(item => {
+                            const iid = 'w-' + w.id + '-' + item.replace(/\s+/g, '_');
+                            return `<div class="habit-check"><input type="checkbox" id="${iid}"><label for="${iid}">${item}</label></div>`;
+                        }).join('');
+                        box.innerHTML = `${title}${checks}`;
+                        break;
+                    }
+
+                    case 'emoji': {
+                        const emojis = w.config.emojis || ['😔','😐','😊','😄'];
+                        const btns = emojis.map(e =>
+                            `<button class="emoji-btn" onclick="app.selectEmoji(this,'w-${w.id}')">${e}</button>`
+                        ).join('');
+                        box.innerHTML = `${title}<div class="emoji-scale" id="w-${w.id}">${btns}</div>`;
+                        break;
+                    }
+
+                    case 'goalreview':
+                        box.innerHTML = `${title}
+                            <div class="goal-review-goal" id="w-${w.id}-goaltext"></div>
+                            <div class="widget-prompt goal-review-q" id="w-${w.id}-q">Did you work toward it?</div>
+                            <div class="goal-review-btns" id="w-${w.id}-btns">
+                                <button class="goal-review-btn" id="w-${w.id}-yes"    onclick="app.selectGoalReview('yes','${w.id}')">Yes</button>
+                                <button class="goal-review-btn" id="w-${w.id}-partly" onclick="app.selectGoalReview('partly','${w.id}')">Partly</button>
+                                <button class="goal-review-btn" id="w-${w.id}-no"     onclick="app.selectGoalReview('no','${w.id}')">No</button>
+                            </div>
+                            <textarea id="w-${w.id}-note" placeholder="Any notes..." style="margin-top:10px"></textarea>`;
+                        break;
+
+                    default:
+                        box.innerHTML = `${title}<p class="widget-prompt">Unknown widget type: ${w.type}</p>`;
+                }
+                return box;
+            },
+
+            selectScale(btn, containerId) {
+                document.querySelectorAll('#' + containerId + ' .scale-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            },
+
+            selectEmoji(btn, containerId) {
+                document.querySelectorAll('#' + containerId + ' .emoji-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            },
+
+            readWidgetValue(w) {
+                switch (w.type) {
+                    case 'text':
+                    case 'maingoal':
+                        return document.getElementById('w-' + w.id)?.value || '';
+                    case 'sleep':
+                        return {
+                            quality: document.querySelector('#w-' + w.id + '-q .scale-btn.active')?.textContent || '',
+                            hours:   document.getElementById('w-' + w.id + '-h')?.value || ''
+                        };
+                    case 'scale':
+                        return document.querySelector('#w-' + w.id + ' .scale-btn.active')?.textContent || '';
+                    case 'number':
+                        return document.getElementById('w-' + w.id)?.value || '';
+                    case 'habits': {
+                        const val = {};
+                        (w.config.items || []).forEach(item => {
+                            const iid = 'w-' + w.id + '-' + item.replace(/\s+/g, '_');
+                            val[item] = document.getElementById(iid)?.checked || false;
+                        });
+                        return val;
+                    }
+                    case 'emoji':
+                        return document.querySelector('#w-' + w.id + ' .emoji-btn.active')?.textContent || '';
+                    case 'goalreview':
+                        return { choice: this.goalReviewChoice || '', note: document.getElementById('w-' + w.id + '-note')?.value || '' };
+                    default: return '';
+                }
+            },
+
+            restoreWidgetValue(w, value) {
+                if (value === undefined || value === null) return;
+                switch (w.type) {
+                    case 'text':
+                    case 'maingoal': {
+                        const el = document.getElementById('w-' + w.id);
+                        if (el) el.value = value;
+                        break;
+                    }
+                    case 'sleep': {
+                        document.querySelectorAll('#w-' + w.id + '-q .scale-btn').forEach(b =>
+                            b.classList.toggle('active', b.textContent === String(value.quality)));
+                        const h = document.getElementById('w-' + w.id + '-h');
+                        if (h) h.value = value.hours || '';
+                        break;
+                    }
+                    case 'scale':
+                        document.querySelectorAll('#w-' + w.id + ' .scale-btn').forEach(b =>
+                            b.classList.toggle('active', b.textContent === String(value)));
+                        break;
+                    case 'number': {
+                        const el = document.getElementById('w-' + w.id);
+                        if (el) el.value = value;
+                        break;
+                    }
+                    case 'habits':
+                        (w.config.items || []).forEach(item => {
+                            const iid = 'w-' + w.id + '-' + item.replace(/\s+/g, '_');
+                            const cb = document.getElementById(iid);
+                            if (cb) cb.checked = value[item] || false;
+                        });
+                        break;
+                    case 'emoji':
+                        document.querySelectorAll('#w-' + w.id + ' .emoji-btn').forEach(b =>
+                            b.classList.toggle('active', b.textContent === value));
+                        break;
+                }
+            },
+
+            /* ── TAB SWITCHING ────────────────────────────────── */
+            switchTab(tab, el) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.journal-detail').forEach(d => d.classList.remove('active'));
+                document.getElementById(tab).classList.add('active');
+                if (el) el.classList.add('active');
+                if (tab === 'insights') this.renderInsights();
+            },
+
+            openSettings() {
+                document.getElementById('settings').classList.add('active');
+                this.updateThemeButtons();
+                this.renderCustomizationEditor();
+            },
+
+            closeSettings() {
+                document.getElementById('settings').classList.remove('active');
+            },
+
+            setTheme(pref) {
+                this.applyTheme(pref);
+                this.updateThemeButtons();
+            },
+
+            updateThemeButtons() {
+                const saved = localStorage.getItem('fulfillx.theme') || 'system';
+                ['light', 'system', 'dark'].forEach(t => {
+                    document.getElementById('theme-' + t).classList.toggle('active', t === saved);
+                });
+            },
+
+            openJournal(type) {
+                this.currentJournal = type;
+                this.goalReviewChoice = null;
+                document.getElementById(type + 'Detail').classList.add('active');
+                if (type === 'morning' || type === 'evening') this.renderJournal(type);
+                this.loadJournalData(type);
+            },
+
+            closeJournal() {
+                document.querySelectorAll('.journal-detail').forEach(d => d.classList.remove('active'));
+                this.currentJournal = null;
+            },
+
+            getTodayKey() {
+                return new Date().toISOString().split('T')[0];
+            },
+
+            saveJournal(type) {
+                const today = this.getTodayKey();
+                const entries = this.getEntries();
+                if (!entries[today]) entries[today] = {};
+
+                if (type === 'morning' || type === 'evening') {
+                    const config = this.getConfig();
+                    const data = {};
+                    (config[type] || []).forEach(w => { data[w.id] = this.readWidgetValue(w); });
+                    entries[today][type] = data;
+                } else if (type === 'daytime') {
+                    entries[today].daytime = {
+                        mood: document.querySelector('#daytimeMood .emoji-btn.active')?.textContent || '',
+                        note: document.getElementById('daytimeNote').value
+                    };
+                }
+
+                this.saveEntries(entries);
+                this.showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} saved! ✓`);
+                this.updateCompletionBadges();
+                this.closeJournal();
+            },
+
+            loadJournalData(type) {
+                const today = this.getTodayKey();
+                const entries = this.getEntries();
+                const todayData = entries[today] || {};
+
+                if (type === 'morning' || type === 'evening') {
+                    const config = this.getConfig();
+                    const data = todayData[type] || {};
+                    (config[type] || []).forEach(w => {
+                        if (w.type === 'goalreview') {
+                            const goal = todayData.morning?.maingoal || '';
+                            this.goalReviewChoice = data[w.id]?.choice || null;
+                            this.populateGoalReview(goal, w.id);
+                            const noteEl = document.getElementById('w-' + w.id + '-note');
+                            if (noteEl) noteEl.value = data[w.id]?.note || '';
+                            ['yes','partly','no'].forEach(k => {
+                                const btn = document.getElementById('w-' + w.id + '-' + k);
+                                if (btn) btn.classList.toggle('active', k === this.goalReviewChoice);
+                            });
+                        } else {
+                            this.restoreWidgetValue(w, data[w.id]);
+                        }
+                    });
+                } else if (type === 'daytime') {
+                    const data = todayData.daytime || {};
+                    document.getElementById('daytimeNote').value = data.note || '';
+                    document.querySelectorAll('#daytimeMood .emoji-btn').forEach(b =>
+                        b.classList.toggle('active', b.textContent === data.mood));
+                }
+            },
+
+            populateGoalReview(goalText, widgetId) {
+                const elGoal = document.getElementById('w-' + widgetId + '-goaltext');
+                const elQ    = document.getElementById('w-' + widgetId + '-q');
+                const elBtns = document.getElementById('w-' + widgetId + '-btns');
+                if (!elGoal) return;
+                if (goalText) {
+                    elGoal.textContent = goalText;
+                    elGoal.style.fontStyle = '';
+                    if (elQ)    elQ.style.display = '';
+                    if (elBtns) elBtns.style.display = '';
+                } else {
+                    elGoal.textContent = 'No morning goal set — open Morning to add one.';
+                    elGoal.style.fontStyle = 'italic';
+                    if (elQ)    elQ.style.display = 'none';
+                    if (elBtns) elBtns.style.display = 'none';
+                }
+            },
+
+            selectGoalReview(choice, widgetId) {
+                this.goalReviewChoice = choice;
+                ['yes','partly','no'].forEach(k => {
+                    const btn = document.getElementById('w-' + widgetId + '-' + k);
+                    if (btn) btn.classList.toggle('active', k === choice);
+                });
+            },
+
+            updateCompletionBadges() {
+                const today = this.getTodayKey();
+                const todayData = this.getEntries()[today] || {};
+
+                ['morning', 'evening'].forEach(type => {
+                    const box = document.getElementById('box-' + type);
+                    if (!box) return;
+                    const existing = box.querySelector('.completion-check');
+                    const done = todayData[type] && Object.keys(todayData[type]).length > 0;
+                    if (done) {
+                        box.classList.add('completed');
+                        if (!existing) {
+                            const check = document.createElement('div');
+                            check.className = 'completion-check';
+                            check.textContent = '✓';
+                            box.appendChild(check);
+                        }
+                    } else {
+                        box.classList.remove('completed');
+                        if (existing) existing.remove();
+                    }
+                });
+
+                const pill = document.getElementById('box-daytime');
+                if (pill) pill.classList.toggle('completed', !!todayData.daytime);
+            },
+
+            renderEmojiScale() {
+                const container = document.getElementById('daytimeMood');
+                ['😔', '😐', '😊', '😄'].forEach(emoji => {
+                    const btn = document.createElement('button');
+                    btn.className = 'emoji-btn';
+                    btn.textContent = emoji;
+                    btn.onclick = function() {
+                        document.querySelectorAll('#daytimeMood .emoji-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                    };
+                    container.appendChild(btn);
+                });
+            },
+
+            renderToolbox() {
+                const tools = [
+                    { icon: '⏱️', name: '20 Minutes', desc: 'Mind dump & plan' },
+                    { icon: '🌊', name: 'Gabor Maté', desc: 'Handle cravings' },
+                    { icon: '🐘', name: 'Elephant Turns', desc: 'Notice reactions' },
+                    { icon: '🌑', name: 'Shadow Work', desc: 'Archetypes' },
+                    { icon: '⚙️', name: '2-Minute Rule', desc: 'Build momentum' },
+                    { icon: '⚖️', name: 'Stoic Control', desc: 'What you control' },
+                    { icon: '🔥', name: 'Shame Spiral', desc: 'Interrupt shame' },
+                    { icon: '🧠', name: 'Thought Record', desc: 'Challenge thoughts' },
+                    { icon: '🤝', name: 'NVC', desc: 'Resolve conflict' },
+                    { icon: '🌬️', name: '5-4-3-2-1', desc: 'Emergency reset' }
+                ];
+                const grid = document.getElementById('toolbox-grid');
+                grid.innerHTML = tools.map(t => 
+                    `<div class="tool-card"><div class="tool-icon">${t.icon}</div><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>`
+                ).join('');
+            },
+
+            renderHabits() {
+                document.getElementById('habits-content').innerHTML = `
+                    <div class="widget-box">
+                        <div class="widget-title">Your Active Habits</div>
+                        <div class="habit-check"><span>✓</span> Meditation</div>
+                        <div class="habit-check"><span>✓</span> Gym</div>
+                        <div class="habit-check"><span>✓</span> Reading</div>
+                        <div class="habit-check"><span>✓</span> Book Club</div>
+                        <div class="habit-check"><span>✓</span> Language Study</div>
+                    </div>
+                    <div style="padding-bottom: 20px;">
+                        <p class="screen-subtext" style="margin-top:16px;font-size:14px;">Try a new habit</p>
+                        <div class="widget-box"><div class="widget-title">Morning Pages</div><div class="widget-prompt">10 min • Creative writing</div></div>
+                        <div class="widget-box"><div class="widget-title">Cold Shower</div><div class="widget-prompt">5 min • Physical wellness</div></div>
+                        <div class="widget-box"><div class="widget-title">Stretch Routine</div><div class="widget-prompt">10 min • Movement</div></div>
+                    </div>
+                `;
+            },
+
+            renderInsights() {
+                const today = this.getTodayKey();
+                const entries = this.getEntries();
+                const todayData = entries[today] || {};
+
+                let completed = 0;
+                if (todayData.morning && Object.keys(todayData.morning).length > 0) completed++;
+                if (todayData.daytime) completed++;
+                if (todayData.evening && Object.keys(todayData.evening).length > 0) completed++;
+
+                const totalDays = Object.keys(entries).length;
+                const sleepHours = todayData.morning?.sleep?.hours;
+
+                document.getElementById('insights-content').innerHTML = `
+                    <div style="padding-bottom: 20px;">
+                        <div class="insight-stat">
+                            <div class="insight-stat-label">Today's Journals</div>
+                            <div class="insight-stat-value">${completed}/3</div>
+                            <div class="insight-stat-desc">${completed === 3 ? 'Complete! Amazing work 🎉' : 'Keep building your ritual'}</div>
+                        </div>
+                        ${sleepHours ? `
+                        <div class="insight-stat">
+                            <div class="insight-stat-label">Sleep Last Night</div>
+                            <div class="insight-stat-value">${sleepHours} hrs</div>
+                            <div class="insight-stat-desc">Quality sleep impacts everything</div>
+                        </div>` : ''}
+                        <div class="insight-stat">
+                            <div class="insight-stat-label">Days Journaled</div>
+                            <div class="insight-stat-value">${totalDays}</div>
+                            <div class="insight-stat-desc">Total days you've shown up</div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            /* ── PHASE 6: CUSTOMIZATION EDITOR ──────────────────── */
+            renderCustomizationEditor() {
+                this.renderCustJournalList('morning');
+                this.renderCustJournalList('evening');
+            },
+
+            renderCustJournalList(journal) {
+                const config = this.getConfig();
+                const widgets = config[journal] || [];
+                const container = document.getElementById('cust-' + journal + '-list');
+                if (!container) return;
+                container.innerHTML = '';
+                widgets.forEach((w, idx) => {
+                    const row = document.createElement('div');
+                    row.className = 'cust-widget-row';
+                    row.innerHTML = `
+                        <div class="cust-widget-reorder">
+                            <button class="cust-reorder-btn" ${idx === 0 ? 'disabled' : ''} onclick="app.moveWidget('${journal}','${w.id}',-1)" title="Move up">↑</button>
+                            <button class="cust-reorder-btn" ${idx === widgets.length - 1 ? 'disabled' : ''} onclick="app.moveWidget('${journal}','${w.id}',1)" title="Move down">↓</button>
+                        </div>
+                        <div class="cust-widget-info">
+                            <span class="cust-widget-type">${w.type}</span>
+                            <span class="cust-widget-title">${w.title}</span>
+                        </div>
+                        <div class="cust-widget-actions">
+                            <button class="cust-action-btn" onclick="app.editWidget('${journal}','${w.id}')">Edit</button>
+                            <button class="cust-action-btn del" onclick="app.removeWidget('${journal}','${w.id}')">✕</button>
+                        </div>`;
+                    container.appendChild(row);
+                });
+            },
+
+            moveWidget(journal, id, dir) {
+                const config = this.getConfig();
+                const arr = config[journal];
+                const idx = arr.findIndex(w => w.id === id);
+                if (idx < 0) return;
+                const newIdx = idx + dir;
+                if (newIdx < 0 || newIdx >= arr.length) return;
+                [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+                this.saveConfig(config);
+                this.renderCustJournalList(journal);
+            },
+
+            removeWidget(journal, id) {
+                const config = this.getConfig();
+                config[journal] = config[journal].filter(w => w.id !== id);
+                this.saveConfig(config);
+                this.renderCustJournalList(journal);
+            },
+
+            resetJournal(journal) {
+                const config = this.getConfig();
+                config[journal] = JSON.parse(JSON.stringify(DEFAULT_CONFIG[journal]));
+                this.saveConfig(config);
+                this.renderCustJournalList(journal);
+                this.showToast(`${journal.charAt(0).toUpperCase() + journal.slice(1)} reset to defaults`);
+            },
+
+            showAddWidget(journal) {
+                this._editingJournal = journal;
+                this._editingWidgetId = null;
+                document.getElementById('we-heading').textContent = 'Add Widget';
+                document.getElementById('we-type').value = 'text';
+                document.getElementById('we-title').value = '';
+                document.getElementById('we-prompt').value = '';
+                document.getElementById('we-items').value = '';
+                this.onWeTypeChange();
+                document.getElementById('widgetEditor').classList.add('active');
+            },
+
+            editWidget(journal, id) {
+                const config = this.getConfig();
+                const w = config[journal]?.find(x => x.id === id);
+                if (!w) return;
+                this._editingJournal = journal;
+                this._editingWidgetId = id;
+                document.getElementById('we-heading').textContent = 'Edit Widget';
+                document.getElementById('we-type').value = w.type;
+                document.getElementById('we-title').value = w.title;
+                document.getElementById('we-prompt').value = w.config.prompt || '';
+                document.getElementById('we-items').value = (w.config.items || []).join(', ');
+                this.onWeTypeChange();
+                document.getElementById('widgetEditor').classList.add('active');
+            },
+
+            onWeTypeChange() {
+                const type = document.getElementById('we-type').value;
+                const hasPrompt = ['text','maingoal'].includes(type);
+                const hasItems  = type === 'habits';
+                document.getElementById('we-prompt-row').style.display = hasPrompt ? '' : 'none';
+                document.getElementById('we-items-row').style.display  = hasItems  ? '' : 'none';
+            },
+
+            saveWidgetEditor() {
+                const type   = document.getElementById('we-type').value;
+                const title  = document.getElementById('we-title').value.trim();
+                const prompt = document.getElementById('we-prompt').value.trim();
+                const items  = document.getElementById('we-items').value.split(',').map(s => s.trim()).filter(Boolean);
+                if (!title) { this.showToast('Please enter a title'); return; }
+
+                const config = this.getConfig();
+                const journal = this._editingJournal;
+                const editId  = this._editingWidgetId;
+
+                const cfg = {};
+                if (prompt) cfg.prompt = prompt;
+                if (items.length) cfg.items = items;
+                if (type === 'sleep') { cfg.scaleMax = 5; cfg.numberLabel = 'Hours slept'; }
+
+                if (editId) {
+                    const w = config[journal].find(x => x.id === editId);
+                    if (w) { w.title = title; w.type = type; w.config = cfg; }
+                } else {
+                    const newId = type + '-' + Date.now();
+                    config[journal].push({ id: newId, type, title, config: cfg });
+                }
+
+                this.saveConfig(config);
+                this.renderCustJournalList(journal);
+                this.closeWidgetEditor();
+            },
+
+            closeWidgetEditor() {
+                document.getElementById('widgetEditor').classList.remove('active');
+            },
+
+            showToast(msg) {
+                const toast = document.getElementById('toast');
+                toast.textContent = msg;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
+</html>
