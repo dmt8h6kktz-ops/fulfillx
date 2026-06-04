@@ -1496,6 +1496,15 @@
                     <label class="we-label">Items (comma-separated)</label>
                     <input type="text" id="we-items" class="hours-input" placeholder="Item 1, Item 2, Item 3">
                 </div>
+                <div class="we-field" id="we-scale-row" style="display:none">
+                    <label class="we-label">Max rating</label>
+                    <select id="we-scalemax" class="we-select">
+                        <option value="3">3</option>
+                        <option value="5" selected>5</option>
+                        <option value="7">7</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
                 <div class="we-actions">
                     <button class="save-btn" style="margin-top:0" onclick="app.saveWidgetEditor()">Save</button>
                     <button class="theme-btn" style="padding:12px" onclick="app.closeWidgetEditor()">Cancel</button>
@@ -1873,7 +1882,7 @@
                         const btns = Array.from({length: max}, (_, i) => i + 1).map(n =>
                             `<button class="scale-btn" onclick="app.selectScale(this,'w-${w.id}')">${n}</button>`
                         ).join('');
-                        box.innerHTML = `${title}<div class="sleep-scale" id="w-${w.id}">${btns}</div>`;
+                        box.innerHTML = `${title}${prompt}<div class="sleep-scale" id="w-${w.id}">${btns}</div>`;
                         break;
                     }
 
@@ -2592,6 +2601,8 @@
                 document.getElementById('we-title').value = '';
                 document.getElementById('we-prompt').value = '';
                 document.getElementById('we-items').value = '';
+                const smElNew = document.getElementById('we-scalemax');
+                if (smElNew) smElNew.value = '5';
                 this.onWeTypeChange();
                 document.getElementById('widgetEditor').classList.add('active');
             },
@@ -2607,16 +2618,20 @@
                 document.getElementById('we-title').value = w.title;
                 document.getElementById('we-prompt').value = w.config.prompt || '';
                 document.getElementById('we-items').value = (w.config.items || []).join(', ');
+                const smEl = document.getElementById('we-scalemax');
+                if (smEl) smEl.value = String(w.config.scaleMax || 5);
                 this.onWeTypeChange();
                 document.getElementById('widgetEditor').classList.add('active');
             },
 
             onWeTypeChange() {
                 const type = document.getElementById('we-type').value;
-                const hasPrompt = ['text','maingoal'].includes(type);
+                const hasPrompt = ['text','maingoal','scale'].includes(type);
                 const hasItems  = type === 'habits';
+                const hasScale  = type === 'scale';
                 document.getElementById('we-prompt-row').style.display = hasPrompt ? '' : 'none';
                 document.getElementById('we-items-row').style.display  = hasItems  ? '' : 'none';
+                document.getElementById('we-scale-row').style.display  = hasScale  ? '' : 'none';
             },
 
             saveWidgetEditor() {
@@ -2634,6 +2649,7 @@
                 if (prompt) cfg.prompt = prompt;
                 if (items.length) cfg.items = items;
                 if (type === 'sleep') { cfg.scaleMax = 5; cfg.numberLabel = 'Hours slept'; }
+                if (type === 'scale') { cfg.scaleMax = parseInt(document.getElementById('we-scalemax')?.value || '5'); }
 
                 if (editId) {
                     const w = config[journal].find(x => x.id === editId);
