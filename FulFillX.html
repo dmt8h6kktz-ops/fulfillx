@@ -1073,6 +1073,99 @@
         .he-day-btn:hover { border-color: var(--accent); color: var(--accent); }
         .he-day-btn.active { background: var(--accent); color: var(--bg-card); border-color: var(--accent); }
 
+        /* ── V1.3 PHASE 2: FAB + TO-DO SHEET ───────────────────── */
+        .todo-fab {
+            display: none;
+            position: absolute;
+            bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 12px);
+            right: 16px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--bg-card);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+            z-index: 20;
+            transition: transform 0.2s;
+        }
+        .todo-fab.visible { display: flex; }
+        .todo-fab:active { transform: scale(0.92); }
+
+        .todo-fab-badge {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            background: #e55;
+            color: #fff;
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .todo-sheet {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 30;
+            align-items: flex-end;
+        }
+        .todo-sheet.active { display: flex; }
+
+        .todo-sheet-content {
+            width: 100%;
+            background: var(--bg-page);
+            border-radius: 32px 32px 0 0;
+            padding: 20px 20px 32px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .todo-sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .todo-sheet-title {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--heading-primary);
+        }
+
+        .todo-sheet-progress {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 13px;
+            color: var(--body-muted);
+            margin-bottom: 12px;
+        }
+
+        .todo-sheet-items { margin-bottom: 12px; }
+
+        .todo-sheet-quick-add {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
         /* ── V1.3 PHASE 1: TODO WIDGETS ─────────────────────────── */
         .todo-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-card); }
         .todo-item:last-child { border-bottom:none; }
@@ -1283,6 +1376,29 @@
             </div>
         </div>
 
+        <!-- TO-DO FAB (home screen only) -->
+        <button class="todo-fab" id="todoFab" onclick="app.openTodoSheet()" aria-label="Today's To-Do">
+            ✓
+            <span class="todo-fab-badge" id="todoFabBadge">0</span>
+        </button>
+
+        <!-- TO-DO SHEET -->
+        <div class="todo-sheet" id="todoSheet">
+            <div class="todo-sheet-content">
+                <div class="todo-sheet-header">
+                    <span class="todo-sheet-title">Today's To-Do</span>
+                    <button class="close-btn" onclick="app.closeTodoSheet()">✕</button>
+                </div>
+                <div class="todo-sheet-progress" id="todoSheetProgress"></div>
+                <div class="todo-sheet-items" id="todoSheetItems"></div>
+                <div class="todo-sheet-quick-add">
+                    <input type="text" class="todo-add-input" id="todoSheetAddInput" placeholder="Add a task..."
+                        onkeydown="if(event.key==='Enter')app.todoSheetAdd()">
+                    <button class="todo-add-btn" onclick="app.todoSheetAdd()">+</button>
+                </div>
+            </div>
+        </div>
+
         <div class="bottom-nav">
             <button class="nav-item active" onclick="app.switchTab('home', this)">
                 <span class="nav-icon">🏠</span><span>Home</span>
@@ -1390,6 +1506,7 @@
                 this.renderEmojiScale();
                 this.updateCompletionBadges();
                 this.renderInsights();
+                this.updateTodoFab();
                 setInterval(() => this.updateGreeting(), 60000);
             },
 
@@ -1764,6 +1881,12 @@
                 if (el) el.classList.add('active');
                 if (tab === 'insights') this.renderInsights();
                 if (tab === 'habits')   this.renderHabits();
+                // FAB is home-only
+                const fab = document.getElementById('todoFab');
+                if (fab) {
+                    if (tab === 'home') this.updateTodoFab();
+                    else fab.classList.remove('visible');
+                }
             },
 
             openSettings() {
@@ -1849,6 +1972,7 @@
                 this.saveEntries(entries);
                 this.showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} saved! ✓`);
                 this.updateCompletionBadges();
+                this.updateTodoFab();
                 this.closeJournal();
             },
 
@@ -2337,6 +2461,124 @@
                 document.getElementById('widgetEditor').classList.remove('active');
             },
 
+            /* ── V1.3 PHASE 2: FAB + TO-DO SHEET ─────────────── */
+            _getTodayTodoItems() {
+                const today = this.getTodayKey();
+                const entries = this.getEntries();
+                const config  = this.getConfig();
+                const items = [];
+                ['morning', 'evening'].forEach(journal => {
+                    (config[journal] || []).forEach(w => {
+                        if (w.type !== 'checklist' && w.type !== 'schedule') return;
+                        const saved = entries[today]?.[journal]?.[w.id];
+                        if (Array.isArray(saved)) {
+                            saved.forEach((item, idx) => items.push({ item, widgetId: w.id, journal, idx, type: w.type }));
+                        }
+                    });
+                });
+                return items;
+            },
+
+            updateTodoFab() {
+                const fab = document.getElementById('todoFab');
+                if (!fab) return;
+                const allItems = this._getTodayTodoItems();
+                const hasAny = allItems.length > 0;
+                fab.classList.toggle('visible', hasAny);
+                const undone = allItems.filter(x => !x.item.done).length;
+                const badge = document.getElementById('todoFabBadge');
+                if (badge) {
+                    badge.textContent = undone;
+                    badge.style.display = undone > 0 ? 'flex' : 'none';
+                }
+            },
+
+            openTodoSheet() {
+                this.renderTodoSheet();
+                document.getElementById('todoSheet').classList.add('active');
+            },
+
+            closeTodoSheet() {
+                document.getElementById('todoSheet').classList.remove('active');
+            },
+
+            renderTodoSheet() {
+                const allItems = this._getTodayTodoItems();
+                const total = allItems.length;
+                const done  = allItems.filter(x => x.item.done).length;
+
+                const progress = document.getElementById('todoSheetProgress');
+                if (progress) progress.textContent = total ? `${done} of ${total} done` : 'No tasks for today';
+
+                const container = document.getElementById('todoSheetItems');
+                if (!container) return;
+                if (!total) { container.innerHTML = ''; return; }
+
+                const timed   = allItems.filter(x => x.item.time).sort((a, b) => a.item.time.localeCompare(b.item.time));
+                const anytime = allItems.filter(x => !x.item.time);
+
+                let html = '';
+                [...timed, ...anytime].forEach(({ item, widgetId, journal, idx, type }) => {
+                    const timePill = item.time ? `<span class="time-pill">${this._esc(item.time)}</span>` : '';
+                    html += `<div class="todo-item">
+                        <button class="todo-check${item.done ? ' done' : ''}"
+                            onclick="app._sheetToggle('${widgetId}','${journal}',${idx},'${type}')">${item.done ? '✓' : ''}</button>
+                        ${timePill}
+                        <span class="todo-text${item.done ? ' done' : ''}">${this._esc(item.text)}</span>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            },
+
+            _sheetToggle(widgetId, journal, idx, type) {
+                const today = this.getTodayKey();
+                const entries = this.getEntries();
+                const arr = entries[today]?.[journal]?.[widgetId];
+                if (!Array.isArray(arr) || idx >= arr.length) return;
+                arr[idx].done = !arr[idx].done;
+                this.saveEntries(entries);
+                // Sync in-memory items if journal is open
+                if (this._widgetItems[widgetId]) {
+                    this._widgetItems[widgetId] = arr;
+                    this._renderTodoList(widgetId, type);
+                }
+                this.renderTodoSheet();
+                this.updateTodoFab();
+            },
+
+            todoSheetAdd() {
+                const input = document.getElementById('todoSheetAddInput');
+                const text = input ? input.value.trim() : '';
+                if (!text) return;
+
+                // Find the first checklist widget in morning (default) or evening
+                const config = this.getConfig();
+                let targetJournal = null, targetWidgetId = null;
+                for (const journal of ['morning', 'evening']) {
+                    const w = (config[journal] || []).find(x => x.type === 'checklist' || x.type === 'schedule');
+                    if (w) { targetJournal = journal; targetWidgetId = w.id; break; }
+                }
+                if (!targetJournal) { this.showToast('Add a checklist widget to Morning first'); return; }
+
+                const today = this.getTodayKey();
+                const entries = this.getEntries();
+                if (!entries[today]) entries[today] = {};
+                if (!entries[today][targetJournal]) entries[today][targetJournal] = {};
+                if (!Array.isArray(entries[today][targetJournal][targetWidgetId])) {
+                    entries[today][targetJournal][targetWidgetId] = [];
+                }
+                entries[today][targetJournal][targetWidgetId].push({ text, done: false });
+                this.saveEntries(entries);
+                // Sync in-memory widget if open
+                if (this._widgetItems[targetWidgetId]) {
+                    this._widgetItems[targetWidgetId] = entries[today][targetJournal][targetWidgetId];
+                    this._renderTodoList(targetWidgetId, 'checklist');
+                }
+                if (input) input.value = '';
+                this.renderTodoSheet();
+                this.updateTodoFab();
+            },
+
             /* ── V1.3 PHASE 1: TODO WIDGET HELPERS ───────────── */
             _renderTodoList(widgetId, widgetType) {
                 const container = document.getElementById('w-' + widgetId + '-list');
@@ -2389,6 +2631,7 @@
                 if (!items || idx >= items.length) return;
                 items[idx].done = !items[idx].done;
                 this._renderTodoList(widgetId, widgetType);
+                this.updateTodoFab();
             },
 
             _todoAdd(widgetId, widgetType) {
