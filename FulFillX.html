@@ -1072,6 +1072,22 @@
         }
         .he-day-btn:hover { border-color: var(--accent); color: var(--accent); }
         .he-day-btn.active { background: var(--accent); color: var(--bg-card); border-color: var(--accent); }
+
+        /* ── V1.3 PHASE 1: TODO WIDGETS ─────────────────────────── */
+        .todo-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-card); }
+        .todo-item:last-child { border-bottom:none; }
+        .todo-check { width:22px; height:22px; border-radius:50%; border:2px solid var(--accent-border); background:transparent; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .2s; font-size:12px; color:transparent; }
+        .todo-check.done { background:var(--accent); border-color:var(--accent); color:var(--bg-card); }
+        .todo-text { flex:1; font-family:'Fredoka',sans-serif; font-size:14px; color:var(--body-text); }
+        .todo-text.done { text-decoration:line-through; color:var(--body-muted); }
+        .time-pill { font-size:11px; font-weight:500; color:var(--accent); background:var(--accent-soft); border-radius:20px; padding:2px 8px; flex-shrink:0; }
+        .todo-group-heading { font-family:'Baloo 2',sans-serif; font-size:11px; font-weight:600; color:var(--body-muted); text-transform:uppercase; letter-spacing:.6px; padding:8px 0 4px; }
+        .todo-add-row { display:flex; align-items:center; gap:6px; padding:8px 0 0; }
+        .todo-add-input { flex:1; padding:8px 10px; border:1.5px solid var(--input-border); border-radius:10px; font-family:'Fredoka',sans-serif; font-size:13px; background:var(--input-bg); color:var(--input-text); min-width:0; }
+        .todo-add-input:focus { outline:none; border-color:var(--accent); }
+        .todo-add-time { width:90px; padding:8px; border:1.5px solid var(--input-border); border-radius:10px; font-family:'Fredoka',sans-serif; font-size:13px; background:var(--input-bg); color:var(--input-text); flex-shrink:0; }
+        .todo-add-time:focus { outline:none; border-color:var(--accent); }
+        .todo-add-btn { padding:8px 14px; background:var(--accent); color:var(--bg-card); border:none; border-radius:10px; font-family:'Fredoka',sans-serif; font-size:13px; font-weight:500; cursor:pointer; flex-shrink:0; }
     </style>
 </head>
 <body>
@@ -1202,6 +1218,8 @@
                         <option value="habits">Habits checklist</option>
                         <option value="emoji">Emoji mood</option>
                         <option value="goalreview">Goal Review</option>
+                        <option value="checklist">Checklist (to-do tasks)</option>
+                        <option value="schedule">Schedule (day planner)</option>
                     </select>
                 </div>
                 <div class="we-field">
@@ -1359,6 +1377,7 @@
         const app = {
             currentJournal: null,
             goalReviewChoice: null,
+            _widgetItems: {},
 
             init() {
                 this.getConfig();
@@ -1599,6 +1618,27 @@
                             <textarea id="w-${w.id}-note" placeholder="Any notes..." style="margin-top:10px"></textarea>`;
                         break;
 
+                    case 'checklist':
+                        this._widgetItems[w.id] = [];
+                        box.innerHTML = `${title}<div id="w-${w.id}-list"></div>
+                            <div class="todo-add-row">
+                                <input type="text" class="todo-add-input" id="w-${w.id}-addinput" placeholder="Add a task..."
+                                    onkeydown="if(event.key==='Enter')app._todoAdd('${w.id}','checklist')">
+                                <button class="todo-add-btn" onclick="app._todoAdd('${w.id}','checklist')">+</button>
+                            </div>`;
+                        break;
+
+                    case 'schedule':
+                        this._widgetItems[w.id] = [];
+                        box.innerHTML = `${title}<div id="w-${w.id}-list"></div>
+                            <div class="todo-add-row">
+                                <input type="text" class="todo-add-input" id="w-${w.id}-addinput" placeholder="Add item..."
+                                    onkeydown="if(event.key==='Enter')app._todoAdd('${w.id}','schedule')">
+                                <input type="time" class="todo-add-time" id="w-${w.id}-addtime">
+                                <button class="todo-add-btn" onclick="app._todoAdd('${w.id}','schedule')">+</button>
+                            </div>`;
+                        break;
+
                     default:
                         box.innerHTML = `${title}<p class="widget-prompt">Unknown widget type: ${w.type}</p>`;
                 }
@@ -1662,12 +1702,21 @@
                         return document.querySelector('#w-' + w.id + ' .emoji-btn.active')?.textContent || '';
                     case 'goalreview':
                         return { choice: this.goalReviewChoice || '', note: document.getElementById('w-' + w.id + '-note')?.value || '' };
+                    case 'checklist':
+                    case 'schedule':
+                        return this._widgetItems[w.id] ? [...this._widgetItems[w.id]] : [];
                     default: return '';
                 }
             },
 
             restoreWidgetValue(w, value) {
-                if (value === undefined || value === null) return;
+                if (value === undefined || value === null) {
+                    if (w.type === 'checklist' || w.type === 'schedule') {
+                        this._widgetItems[w.id] = [];
+                        this._renderTodoList(w.id, w.type);
+                    }
+                    return;
+                }
                 switch (w.type) {
                     case 'text':
                     case 'maingoal': {
@@ -1697,6 +1746,11 @@
                     case 'emoji':
                         document.querySelectorAll('#w-' + w.id + ' .emoji-btn').forEach(b =>
                             b.classList.toggle('active', b.textContent === value));
+                        break;
+                    case 'checklist':
+                    case 'schedule':
+                        this._widgetItems[w.id] = Array.isArray(value) ? value : [];
+                        this._renderTodoList(w.id, w.type);
                         break;
                 }
             },
@@ -2281,6 +2335,81 @@
 
             closeWidgetEditor() {
                 document.getElementById('widgetEditor').classList.remove('active');
+            },
+
+            /* ── V1.3 PHASE 1: TODO WIDGET HELPERS ───────────── */
+            _renderTodoList(widgetId, widgetType) {
+                const container = document.getElementById('w-' + widgetId + '-list');
+                if (!container) return;
+                const items = this._widgetItems[widgetId] || [];
+
+                if (widgetType === 'checklist') {
+                    if (!items.length) {
+                        container.innerHTML = '<p class="habit-empty" style="padding:4px 0">No tasks yet — add one below.</p>';
+                        return;
+                    }
+                    container.innerHTML = items.map((item, i) =>
+                        `<div class="todo-item">
+                            <button class="todo-check${item.done ? ' done' : ''}" onclick="app._todoToggle('${widgetId}','checklist',${i})">${item.done ? '✓' : ''}</button>
+                            <span class="todo-text${item.done ? ' done' : ''}">${this._esc(item.text)}</span>
+                        </div>`
+                    ).join('');
+                } else {
+                    const timed   = items.filter(x => x.time).slice().sort((a, b) => a.time.localeCompare(b.time));
+                    const anytime = items.filter(x => !x.time);
+                    if (!timed.length && !anytime.length) {
+                        container.innerHTML = '<p class="habit-empty" style="padding:4px 0">No items yet — add one below.</p>';
+                        return;
+                    }
+                    let html = '';
+                    timed.forEach(item => {
+                        const i = items.indexOf(item);
+                        html += `<div class="todo-item">
+                            <button class="todo-check${item.done ? ' done' : ''}" onclick="app._todoToggle('${widgetId}','schedule',${i})">${item.done ? '✓' : ''}</button>
+                            <span class="time-pill">${this._esc(item.time)}</span>
+                            <span class="todo-text${item.done ? ' done' : ''}">${this._esc(item.text)}</span>
+                        </div>`;
+                    });
+                    if (anytime.length) {
+                        if (timed.length) html += `<div class="todo-group-heading">Anytime</div>`;
+                        anytime.forEach(item => {
+                            const i = items.indexOf(item);
+                            html += `<div class="todo-item">
+                                <button class="todo-check${item.done ? ' done' : ''}" onclick="app._todoToggle('${widgetId}','schedule',${i})">${item.done ? '✓' : ''}</button>
+                                <span class="todo-text${item.done ? ' done' : ''}">${this._esc(item.text)}</span>
+                            </div>`;
+                        });
+                    }
+                    container.innerHTML = html;
+                }
+            },
+
+            _todoToggle(widgetId, widgetType, idx) {
+                const items = this._widgetItems[widgetId];
+                if (!items || idx >= items.length) return;
+                items[idx].done = !items[idx].done;
+                this._renderTodoList(widgetId, widgetType);
+            },
+
+            _todoAdd(widgetId, widgetType) {
+                const input = document.getElementById('w-' + widgetId + '-addinput');
+                const text = input ? input.value.trim() : '';
+                if (!text) return;
+                if (!this._widgetItems[widgetId]) this._widgetItems[widgetId] = [];
+                if (widgetType === 'checklist') {
+                    this._widgetItems[widgetId].push({ text, done: false });
+                } else {
+                    const timeEl = document.getElementById('w-' + widgetId + '-addtime');
+                    const time = timeEl ? (timeEl.value || null) : null;
+                    this._widgetItems[widgetId].push({ text, time, done: false, reminder: { enabled: false, lead: 'attime' } });
+                    if (timeEl) timeEl.value = '';
+                }
+                if (input) input.value = '';
+                this._renderTodoList(widgetId, widgetType);
+            },
+
+            _esc(str) {
+                return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
             },
 
             showToast(msg) {
