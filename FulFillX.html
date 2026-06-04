@@ -497,6 +497,7 @@
         }
         .habit-check label { cursor: pointer; flex: 1; }
         .habit-check span { color: #4CAF50; font-weight: 600; }
+        .habit-empty { font-family: 'Fredoka', sans-serif; font-size: 13px; color: var(--body-muted); font-style: italic; padding: 4px 0; }
 
         .hours-input {
             width: 100%;
@@ -1171,6 +1172,10 @@
                     <div class="emoji-scale" id="daytimeMood"></div>
                     <input type="text" id="daytimeNote" class="hours-input" placeholder="Optional note..." style="margin-top:10px">
                 </div>
+                <div class="widget-box" id="daytimeHabitsBox">
+                    <div class="widget-title">Daytime Habits</div>
+                    <div id="daytimeHabitsContainer"></div>
+                </div>
                 <button class="save-btn" onclick="app.saveJournal('daytime')">Save Check-in ✓</button>
             </div>
         </div>
@@ -1435,11 +1440,19 @@
                         break;
 
                     case 'habits': {
-                        const checks = (w.config.items || []).map(item => {
-                            const iid = 'w-' + w.id + '-' + item.replace(/\s+/g, '_');
-                            return `<div class="habit-check"><input type="checkbox" id="${iid}"><label for="${iid}">${item}</label></div>`;
-                        }).join('');
-                        box.innerHTML = `${title}${checks}`;
+                        const todayDow = new Date().getDay();
+                        const scheduled = this.getHabits().filter(
+                            h => h.active && h.slots.includes(journalType) && h.days.includes(todayDow)
+                        );
+                        if (!scheduled.length) {
+                            box.innerHTML = `${title}<p class="habit-empty">No habits scheduled — add some in the Habits tab.</p>`;
+                        } else {
+                            const checks = scheduled.map(h => {
+                                const iid = 'w-' + w.id + '-' + h.id;
+                                return `<div class="habit-check"><input type="checkbox" id="${iid}" onchange="app.syncHabit('${h.id}',this.checked)"><label for="${iid}">${h.icon} ${h.name}</label></div>`;
+                            }).join('');
+                            box.innerHTML = `${title}${checks}`;
+                        }
                         break;
                     }
 
@@ -1480,6 +1493,33 @@
                 btn.classList.add('active');
             },
 
+            syncHabit(habitId, checked) {
+                const today = this.getTodayKey();
+                const entries = this.getEntries();
+                if (!entries[today]) entries[today] = {};
+                if (!entries[today].habits) entries[today].habits = {};
+                entries[today].habits[habitId] = checked;
+                this.saveEntries(entries);
+                this.updateCompletionBadges();
+            },
+
+            renderDaytimeHabits(habitsData) {
+                const container = document.getElementById('daytimeHabitsContainer');
+                const box = document.getElementById('daytimeHabitsBox');
+                if (!container) return;
+                const todayDow = new Date().getDay();
+                const scheduled = this.getHabits().filter(h => h.active && h.slots.includes('daytime') && h.days.includes(todayDow));
+                if (!scheduled.length) {
+                    container.innerHTML = '<p class="habit-empty">No habits scheduled — add some in the Habits tab.</p>';
+                    if (box) box.style.display = '';
+                } else {
+                    container.innerHTML = scheduled.map(h =>
+                        `<div class="habit-check"><input type="checkbox" id="daytime-h-${h.id}" ${habitsData[h.id] ? 'checked' : ''} onchange="app.syncHabit('${h.id}',this.checked)"><label for="daytime-h-${h.id}">${h.icon} ${h.name}</label></div>`
+                    ).join('');
+                    if (box) box.style.display = '';
+                }
+            },
+
             readWidgetValue(w) {
                 switch (w.type) {
                     case 'text':
@@ -1494,14 +1534,8 @@
                         return document.querySelector('#w-' + w.id + ' .scale-btn.active')?.textContent || '';
                     case 'number':
                         return document.getElementById('w-' + w.id)?.value || '';
-                    case 'habits': {
-                        const val = {};
-                        (w.config.items || []).forEach(item => {
-                            const iid = 'w-' + w.id + '-' + item.replace(/\s+/g, '_');
-                            val[item] = document.getElementById(iid)?.checked || false;
-                        });
-                        return val;
-                    }
+                    case 'habits':
+                        return null; // handled via syncHabit / saveJournal special-case
                     case 'emoji':
                         return document.querySelector('#w-' + w.id + ' .emoji-btn.active')?.textContent || '';
                     case 'goalreview':
@@ -1536,11 +1570,7 @@
                         break;
                     }
                     case 'habits':
-                        (w.config.items || []).forEach(item => {
-                            const iid = 'w-' + w.id + '-' + item.replace(/\s+/g, '_');
-                            const cb = document.getElementById(iid);
-                            if (cb) cb.checked = value[item] || false;
-                        });
+                        // Restored in loadJournalData from entries[date].habits
                         break;
                     case 'emoji':
                         document.querySelectorAll('#w-' + w.id + ' .emoji-btn').forEach(b =>
@@ -1606,13 +1636,37 @@
                 if (type === 'morning' || type === 'evening') {
                     const config = this.getConfig();
                     const data = {};
-                    (config[type] || []).forEach(w => { data[w.id] = this.readWidgetValue(w); });
+                    const todayDow = new Date().getDay();
+                    if (!entries[today].habits) entries[today].habits = {};
+                    (config[type] || []).forEach(w => {
+                        if (w.type === 'habits') {
+                            // Merge any rendered habit checkboxes into shared entries[date].habits
+                            const scheduled = this.getHabits().filter(
+                                h => h.active && h.slots.includes(type) && h.days.includes(todayDow)
+                            );
+                            scheduled.forEach(h => {
+                                const cb = document.getElementById('w-' + w.id + '-' + h.id);
+                                if (cb) entries[today].habits[h.id] = cb.checked;
+                            });
+                        } else {
+                            const val = this.readWidgetValue(w);
+                            if (val !== null) data[w.id] = val;
+                        }
+                    });
                     entries[today][type] = data;
                 } else if (type === 'daytime') {
                     entries[today].daytime = {
                         mood: document.querySelector('#daytimeMood .emoji-btn.active')?.textContent || '',
                         note: document.getElementById('daytimeNote').value
                     };
+                    // Merge daytime habit checkboxes into shared entries[date].habits
+                    if (!entries[today].habits) entries[today].habits = {};
+                    const todayDow = new Date().getDay();
+                    this.getHabits().filter(h => h.active && h.slots.includes('daytime') && h.days.includes(todayDow))
+                        .forEach(h => {
+                            const cb = document.getElementById('daytime-h-' + h.id);
+                            if (cb) entries[today].habits[h.id] = cb.checked;
+                        });
                 }
 
                 this.saveEntries(entries);
@@ -1629,6 +1683,8 @@
                 if (type === 'morning' || type === 'evening') {
                     const config = this.getConfig();
                     const data = todayData[type] || {};
+                    const habitsData = todayData.habits || {};
+                    const todayDow = new Date().getDay();
                     (config[type] || []).forEach(w => {
                         if (w.type === 'goalreview') {
                             const goal = todayData.morning?.maingoal || '';
@@ -1640,6 +1696,14 @@
                                 const btn = document.getElementById('w-' + w.id + '-' + k);
                                 if (btn) btn.classList.toggle('active', k === this.goalReviewChoice);
                             });
+                        } else if (w.type === 'habits') {
+                            const scheduled = this.getHabits().filter(
+                                h => h.active && h.slots.includes(type) && h.days.includes(todayDow)
+                            );
+                            scheduled.forEach(h => {
+                                const cb = document.getElementById('w-' + w.id + '-' + h.id);
+                                if (cb) cb.checked = habitsData[h.id] || false;
+                            });
                         } else {
                             this.restoreWidgetValue(w, data[w.id]);
                         }
@@ -1649,6 +1713,7 @@
                     document.getElementById('daytimeNote').value = data.note || '';
                     document.querySelectorAll('#daytimeMood .emoji-btn').forEach(b =>
                         b.classList.toggle('active', b.textContent === data.mood));
+                    this.renderDaytimeHabits(todayData.habits || {});
                 }
             },
 
