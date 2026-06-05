@@ -340,6 +340,35 @@
         }
         .tool-desc { font-size: 11px; color: var(--body-muted); line-height: 1.3; font-weight: 400; }
 
+        /* ── V1.4 PHASE 1: TOOLBOX SHELL ─────────────────────────── */
+        .tool-grid { display:flex !important; flex-direction:column; gap:8px; padding-bottom:20px; }
+        .tool-group-heading { font-family:'Baloo 2',sans-serif; font-size:12px; font-weight:600; color:var(--heading-secondary); text-transform:uppercase; letter-spacing:.8px; padding:14px 4px 6px; }
+        .tool-list-card { background:var(--bg-card); border-radius:16px; padding:14px 16px; cursor:pointer; border:1.5px solid var(--border-card); transition:all .3s ease; box-shadow:0 2px 8px rgba(0,0,0,.07); }
+        .tool-list-card:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.12); }
+        .tool-list-card:active { transform:scale(.97); }
+        .tool-list-card-row { display:flex; align-items:flex-start; gap:12px; }
+        .tool-list-icon { font-size:26px; flex-shrink:0; margin-top:2px; }
+        .tool-list-body { flex:1; min-width:0; }
+        .tool-list-name { font-family:'Baloo 2',sans-serif; font-size:16px; font-weight:600; color:var(--journal-title); line-height:1.2; }
+        .tool-list-purpose { font-size:12px; color:var(--body-muted); margin-top:2px; font-weight:400; }
+        .tool-list-credit { font-size:11px; color:var(--body-muted); font-style:italic; margin-top:6px; line-height:1.4; }
+        .tool-info-btn { width:28px; height:28px; border-radius:50%; border:1.5px solid var(--accent-border); background:var(--accent-soft); font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; color:var(--accent); cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+        .tool-info-btn:active { background:var(--accent); color:var(--bg-card); }
+
+        .tool-info-overlay { display:none; position:absolute; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,.45); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); z-index:35; align-items:flex-end; }
+        .tool-info-overlay.active { display:flex; }
+        .tool-info-sheet { width:100%; background:var(--bg-page); border-radius:32px 32px 0 0; padding:22px 20px 36px; max-height:82vh; overflow-y:auto; animation:slideUp .4s cubic-bezier(.34,1.56,.64,1); -webkit-overflow-scrolling:touch; }
+        .tool-info-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+        .tool-info-title { font-family:'Baloo 2',sans-serif; font-size:20px; font-weight:700; color:var(--heading-primary); }
+        .tool-info-credit-line { font-size:11px; color:var(--body-muted); font-style:italic; margin-bottom:14px; line-height:1.4; }
+        .tool-info-section { font-family:'Baloo 2',sans-serif; font-size:12px; font-weight:600; color:var(--heading-secondary); text-transform:uppercase; letter-spacing:.7px; margin:14px 0 5px; }
+        .tool-info-text { font-family:'Fredoka',sans-serif; font-size:14px; color:var(--body-text); line-height:1.6; }
+
+        .tool-screen-overlay { display:none; position:absolute; top:0;left:0;right:0;bottom:0; background:var(--bg-page); z-index:65; flex-direction:column; }
+        .tool-screen-overlay.active { display:flex; }
+        .tool-screen-topbar { display:flex; justify-content:space-between; align-items:center; padding:48px 20px 16px; flex-shrink:0; border-bottom:1px solid var(--border-card); }
+        .tool-screen-title { font-family:'Baloo 2',sans-serif; font-size:18px; font-weight:700; color:var(--heading-primary); }
+
         /* ── JOURNAL DETAIL MODAL ────────────────────────────────── */
         .journal-detail {
             display: none;
@@ -1605,6 +1634,31 @@
 
         <div class="toast" id="toast">Saved! ✓</div>
 
+        <!-- TOOL INFO POPUP -->
+        <div class="tool-info-overlay" id="toolInfoOverlay">
+            <div class="tool-info-sheet">
+                <div class="tool-info-header">
+                    <span class="tool-info-title" id="toolInfoTitle"></span>
+                    <button class="close-btn" onclick="app.closeToolInfo()">✕</button>
+                </div>
+                <div class="tool-info-credit-line" id="toolInfoCredit"></div>
+                <div class="tool-info-section">When to use it</div>
+                <div class="tool-info-text" id="toolInfoUse"></div>
+                <div class="tool-info-section">Example</div>
+                <div class="tool-info-text" id="toolInfoExample"></div>
+            </div>
+        </div>
+
+        <!-- TOOL SCREEN (full-screen flow) -->
+        <div class="tool-screen-overlay" id="toolScreen">
+            <div class="tool-screen-topbar">
+                <button class="gear-btn" onclick="app.closeTool()" aria-label="Back">←</button>
+                <span class="tool-screen-title" id="toolScreenTitle"></span>
+                <button class="tool-info-btn" onclick="app.openToolInfo(app._currentToolId)" aria-label="Info">i</button>
+            </div>
+            <div class="scrollable-content" id="toolScreenContent" style="padding:16px"></div>
+        </div>
+
         <!-- HABIT EDITOR OVERLAY -->
         <div class="habit-editor-overlay" id="habitEditor">
             <div class="settings-topbar">
@@ -1678,6 +1732,125 @@
                 { id: "sleepintent", type: "text",      title: "Sleep Intention",      config: { prompt: "What will help you sleep well tonight?" } }
             ]
         };
+
+        const TOOL_REGISTRY = [
+            { id:'five_rs',       name:"The 5 R's",                icon:'🔁', group:'reflect',
+              purpose:'Work through a craving or urge, step by step.',
+              credit:'Four Steps by Dr. Jeffrey Schwartz (Brain Lock); adapted for cravings and expanded with a fifth step by Dr. Gabor Maté (In the Realm of Hungry Ghosts).',
+              infoUse:'When an urge or craving shows up — for anything — and you want to meet it with awareness instead of autopilot.',
+              infoExample:"An urge to reach for your phone hits. You relabel it as a false signal, trace it to an old habit loop, refocus elsewhere, weigh what giving in really costs, and reconnect to the life you'd rather build.",
+              type:'diary', config:{ footer:'Urges recur — every time you turn one away is a win.', steps:[
+                { key:'relabel',      label:'Relabel',           prompt:'Name the urge for what it is (an urge, not a command).' },
+                { key:'reattribute',  label:'Reattribute',       prompt:"Where's this really coming from? An old signal/habit loop, not the true you." },
+                { key:'refocus',      label:'Refocus',           prompt:'What will you do instead, right now, to let it pass? Any redirection counts.' },
+                { key:'revalue',      label:'Revalue',           prompt:'Play it forward: what does giving in actually cost you?' },
+                { key:'recreate',     label:'Recreate',          prompt:'Reconnect to your values: what life or person are you choosing instead?' }
+              ]}},
+            { id:'elephant',      name:'Elephant & Rider',         icon:'🐘', group:'reflect',
+              purpose:'Catch the moment emotion takes the reins.',
+              credit:'From Jonathan Haidt, The Happiness Hypothesis (2006).',
+              infoUse:'When you reacted automatically and want to understand the pull behind it.',
+              infoExample:"You snapped before you 'decided' to — the elephant (emotion) turned before the rider (reason) had a say. Journaling these moments builds the awareness to catch them earlier.",
+              type:'diary', config:{ steps:[
+                { key:'what_happened',  label:'The moment',    prompt:'What happened — the moment the elephant turned?' },
+                { key:'elephant_felt',  label:'The elephant',  prompt:'What did the elephant want or feel right then?' },
+                { key:'rider_chose',    label:'The rider',     prompt:'Where was the rider? What would it have chosen?' },
+                { key:'catch_earlier',  label:'Next time',     prompt:'What might help you notice this turn earlier next time?' }
+              ]}},
+            { id:'shadow',        name:'Shadow Work',               icon:'🌓', group:'reflect',
+              purpose:'Get curious about what you reject in yourself.',
+              credit:'Concept by Carl Jung; practical exercise from Robert A. Johnson, Owning Your Own Shadow.',
+              infoUse:'When someone triggers a judgment or reaction far bigger than the moment deserves.',
+              infoExample:"A coworker's bragging irritates you intensely. Shadow work asks what that reaction protects or hides in you — often a disowned part worth integrating rather than exiling.",
+              type:'diary', config:{ steps:[
+                { key:'trigger',    label:'The trigger',   prompt:'What triggered a strong reaction or judgment?' },
+                { key:'reacted_to', label:'The reaction',  prompt:'What exactly did you react to in them?' },
+                { key:'in_you',     label:'In you',        prompt:'Where might that same trait live, unowned, in you?' },
+                { key:'integrate',  label:'Integrate',     prompt:'What would it look like to accept or integrate that part?' }
+              ]}},
+            { id:'stoic',         name:'Dichotomy of Control',      icon:'⚖️', group:'reflect',
+              purpose:"Separate what's yours to control from what isn't.",
+              credit:'From Epictetus, the Enchiridion (Stoic philosophy).',
+              infoUse:"When you're spinning on something stressful and want to spend energy where it counts.",
+              infoExample:"A flight's delayed and you're fuming. The delay isn't yours to control; your response and next move are. You invest there and practice letting the rest go.",
+              type:'diary', config:{ steps:[
+                { key:'troubling',  label:'What troubles you',      prompt:"What's troubling you right now?" },
+                { key:'not_yours',  label:'Not yours to control',   prompt:'What part is NOT up to you (outcomes, others, externals)? Name it to set it down.' },
+                { key:'yours',      label:'Yours to control',       prompt:'What part IS up to you (your judgments, choices, actions)?' },
+                { key:'invest',     label:'Invest here',            prompt:"One thing in your control you'll put energy into?" }
+              ]}},
+            { id:'shame',         name:'Shame Resilience',          icon:'🫂', group:'reflect',
+              purpose:"Loosen shame's grip when it hits.",
+              credit:"From Brené Brown's Shame Resilience Theory (I Thought It Was Just Me).",
+              infoUse:"When you feel small, exposed, or 'not enough' and want to come back to yourself.",
+              infoExample:"After a mistake the 'I'm a fraud' feeling floods in. You name the shame and its trigger, reality-check the story, reach out to someone safe, and say it out loud — where shame loses its power.",
+              type:'diary', config:{ steps:[
+                { key:'recognize',    label:'Recognize',          prompt:'Name the shame and its trigger. Where do you feel it in your body?' },
+                { key:'critical',     label:'Critical awareness', prompt:"Whose expectation is driving this? Is it realistic or fair?" },
+                { key:'reach_out',    label:'Reach out',          prompt:'Who is someone safe you could share this with?' },
+                { key:'speak_shame',  label:'Speak shame',        prompt:"Say it plainly: what's the story you're afraid is true?" }
+              ]}},
+            { id:'thought_record', name:'Thought Record',           icon:'🧩', group:'reflect',
+              purpose:'Test a painful thought against the evidence.',
+              credit:'Cognitive Behavioral Therapy — Dr. Aaron Beck; popularized by Dr. David Burns (Feeling Good).',
+              infoUse:'When an upsetting thought feels like fact and you want to check it.',
+              infoExample:"'Everyone thought my talk was terrible.' You log the situation, the thought, the feeling, spot the trap (mind-reading, all-or-nothing), and write a fairer view — and the feeling eases.",
+              type:'diary', config:{ steps:[
+                { key:'situation',    label:'Situation',        prompt:'What happened?' },
+                { key:'auto_thought', label:'Automatic thought',prompt:'What went through your mind?' },
+                { key:'feeling',      label:'Feeling',          prompt:'What did you feel, and how strong (0–100%)?' },
+                { key:'trap',         label:'Thinking trap',    prompt:'All-or-nothing, mind-reading, catastrophizing…?' },
+                { key:'balanced',     label:'Balanced view',    prompt:'A fairer, more accurate thought?' },
+                { key:'rerate',       label:'Re-rate feeling',  prompt:'How strong is the feeling now?' }
+              ]}},
+            { id:'nvc',           name:'Nonviolent Communication',  icon:'💬', group:'reflect',
+              purpose:'Say something hard without blame.',
+              credit:'Nonviolent Communication — Dr. Marshall Rosenberg.',
+              infoUse:'When you need to raise something difficult and want to be heard, not met with defensiveness.',
+              infoExample:"Instead of 'you never listen': observation ('the last few talks you were on your phone'), feeling ('I felt unimportant'), need ('I need to feel heard'), request ('could we talk 10 minutes phone-down?').",
+              type:'diary', config:{ draftMessage:true, steps:[
+                { key:'observation', label:'Observation', prompt:'Just the facts, no judgment: what happened?' },
+                { key:'feeling',     label:'Feeling',     prompt:'What do you feel about it?' },
+                { key:'need',        label:'Need',        prompt:'What underlying need is behind that feeling?' },
+                { key:'request',     label:'Request',     prompt:'A clear, doable ask — what would help?' }
+              ]}},
+            { id:'mind_dump',     name:'Mind Dump',                 icon:'🧠', group:'moment',
+              purpose:'Clear a cluttered mind onto the page.',
+              credit:'Mind dump technique described by Mo Gawdat.',
+              infoUse:"When your head is noisy and overwhelmed and you can't think straight.",
+              infoExample:"Before bed your mind is spinning. You dump it all out for a few minutes, cross off what doesn't matter, and turn the rest into a short action list — and your head is quieter.",
+              type:'braindump', config:{}},
+            { id:'grounding',     name:'5-4-3-2-1 Grounding',       icon:'🌿', group:'moment',
+              purpose:'Anchor yourself in the present.',
+              credit:'A widely used grounding technique.',
+              infoUse:'When anxiety or overwhelm pulls you out of the moment.',
+              infoExample:"Panic rising in a crowded room — name 5 things you see, 4 you hear, 3 you can touch, 2 you smell, 1 you taste, and you're back in your body.",
+              type:'grounding', config:{}},
+            { id:'ns_reset',      name:'Nervous-System Reset',       icon:'🌊', group:'moment',
+              purpose:'Find your state, then settle your body.',
+              credit:'Polyvagal theory — Dr. Stephen Porges; practice via Deb Dana; physiological sigh via Dr. Andrew Huberman (Stanford).',
+              infoUse:'When you feel wired and panicky, or flat and shut down, and want to bring your body back toward calm.',
+              infoExample:"Before a hard conversation your chest is tight and your mind races. You name it as fight-or-flight, then take three physiological sighs before you walk in.",
+              type:'statepractice', config:{}},
+            { id:'attachment',    name:'Attachment',                 icon:'💞', group:'know',
+              purpose:'Understand your patterns in relationships.',
+              credit:'Based on Levine & Heller, Attached (2010); attachment theory of Bowlby & Ainsworth.',
+              infoUse:'When you feel a spike of worry, clinginess, or the urge to pull away in a relationship.',
+              infoExample:"Someone doesn't reply for hours; your chest tightens and you start drafting a follow-up. This helps you catch that as your attachment system activating and choose your next move on purpose.",
+              type:'attachment', config:{}},
+            { id:'observer',      name:'Observer',                   icon:'👁️', group:'know',
+              purpose:"Step back from a thought that's got you.",
+              credit:'ACT cognitive defusion — Dr. Steven Hayes; popularized by Dr. Russ Harris.',
+              infoUse:"When a harsh, sticky thought has you hooked and you're treating it as flat fact.",
+              infoExample:"'I always mess things up' is on loop. Instead of arguing with it, you step back and watch it: 'I'm having the thought that I always mess things up.' The grip loosens.",
+              type:'ladder', config:{}},
+            { id:'values',        name:'Values',                     icon:'🧭', group:'know',
+              purpose:'Find your compass — what you want to stand for.',
+              credit:"ACT values work — Dr. Steven Hayes; Bull's Eye by Tobias Lundgren; via Dr. Russ Harris.",
+              infoUse:"When you feel directionless or pulled by others' expectations and want to reconnect with what matters.",
+              infoExample:"'Get married' is a goal — you tick it off. 'Be loving and present' is a value — a direction you never finish walking. Values are the compass; goals are the stops.",
+              type:'bullseye', config:{}}
+        ];
 
         const app = {
             currentJournal: null,
@@ -2286,23 +2459,87 @@
             },
 
             renderToolbox() {
-                const tools = [
-                    { icon: '⏱️', name: '20 Minutes', desc: 'Mind dump & plan' },
-                    { icon: '🌊', name: 'Gabor Maté', desc: 'Handle cravings' },
-                    { icon: '🐘', name: 'Elephant Turns', desc: 'Notice reactions' },
-                    { icon: '🌑', name: 'Shadow Work', desc: 'Archetypes' },
-                    { icon: '⚙️', name: '2-Minute Rule', desc: 'Build momentum' },
-                    { icon: '⚖️', name: 'Stoic Control', desc: 'What you control' },
-                    { icon: '🔥', name: 'Shame Spiral', desc: 'Interrupt shame' },
-                    { icon: '🧠', name: 'Thought Record', desc: 'Challenge thoughts' },
-                    { icon: '🤝', name: 'NVC', desc: 'Resolve conflict' },
-                    { icon: '🌬️', name: '5-4-3-2-1', desc: 'Emergency reset' }
+                const groups = [
+                    { key:'moment',  label:'In the moment' },
+                    { key:'reflect', label:'Reflect & journal' },
+                    { key:'know',    label:'Know yourself' }
                 ];
                 const grid = document.getElementById('toolbox-grid');
-                grid.innerHTML = tools.map(t => 
-                    `<div class="tool-card"><div class="tool-icon">${t.icon}</div><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>`
-                ).join('');
+                let html = '';
+                groups.forEach(g => {
+                    const tools = TOOL_REGISTRY.filter(t => t.group === g.key);
+                    if (!tools.length) return;
+                    html += `<div class="tool-group-heading">${g.label}</div>`;
+                    tools.forEach(t => {
+                        html += `<div class="tool-list-card" onclick="app.openTool('${t.id}')">
+                            <div class="tool-list-card-row">
+                                <span class="tool-list-icon">${t.icon}</span>
+                                <div class="tool-list-body">
+                                    <div class="tool-list-name">${t.name}</div>
+                                    <div class="tool-list-purpose">${t.purpose}</div>
+                                    <div class="tool-list-credit">${t.credit}</div>
+                                </div>
+                                <button class="tool-info-btn" onclick="event.stopPropagation();app.openToolInfo('${t.id}')" aria-label="Info">i</button>
+                            </div>
+                        </div>`;
+                    });
+                });
+                grid.innerHTML = html;
             },
+
+            openToolInfo(toolId) {
+                const t = TOOL_REGISTRY.find(x => x.id === toolId);
+                if (!t) return;
+                document.getElementById('toolInfoTitle').textContent   = `${t.icon} ${t.name}`;
+                document.getElementById('toolInfoCredit').textContent  = t.credit;
+                document.getElementById('toolInfoUse').textContent     = t.infoUse;
+                document.getElementById('toolInfoExample').textContent = t.infoExample;
+                document.getElementById('toolInfoOverlay').classList.add('active');
+            },
+
+            closeToolInfo() {
+                document.getElementById('toolInfoOverlay').classList.remove('active');
+            },
+
+            openTool(toolId) {
+                const t = TOOL_REGISTRY.find(x => x.id === toolId);
+                if (!t) return;
+                this._currentToolId = toolId;
+                document.getElementById('toolScreenTitle').textContent = `${t.icon} ${t.name}`;
+                this._renderToolScreen(t);
+                document.getElementById('toolScreen').classList.add('active');
+            },
+
+            closeTool() {
+                document.getElementById('toolScreen').classList.remove('active');
+                this._currentToolId = null;
+            },
+
+            _renderToolScreen(tool) {
+                const el = document.getElementById('toolScreenContent');
+                if (!el) return;
+                // Routes to the appropriate flow renderer; stubs filled in later phases
+                switch (tool.type) {
+                    case 'diary':        return this._renderDiaryFlow(tool, el);
+                    case 'braindump':    return this._renderBraindump(tool, el);
+                    case 'grounding':    return this._renderGrounding(tool, el);
+                    case 'statepractice':return this._renderNSReset(tool, el);
+                    case 'attachment':   return this._renderAttachment(tool, el);
+                    case 'ladder':       return this._renderObserver(tool, el);
+                    case 'bullseye':     return this._renderValues(tool, el);
+                    default:
+                        el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Coming soon</p>`;
+                }
+            },
+
+            // Stubs — replaced/filled in later phases
+            _renderDiaryFlow(tool, el)    { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Diary flow — Phase 2</p>`; },
+            _renderBraindump(tool, el)    { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Mind Dump — Phase 4</p>`; },
+            _renderGrounding(tool, el)    { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>5-4-3-2-1 — Phase 4</p>`; },
+            _renderNSReset(tool, el)      { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>NS Reset — Phase 5</p>`; },
+            _renderAttachment(tool, el)   { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Attachment — Phase 5</p>`; },
+            _renderObserver(tool, el)     { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Observer — Phase 6</p>`; },
+            _renderValues(tool, el)       { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Values — Phase 6</p>`; },
 
             /* ── HABITS MANAGER ───────────────────────────────────── */
             renderHabits() {
