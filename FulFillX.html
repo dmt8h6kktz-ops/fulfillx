@@ -422,6 +422,29 @@
         .attach-choice-btn { flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--accent-border); background:var(--accent-soft); font-family:'Fredoka',sans-serif; font-size:13px; font-weight:500; color:var(--accent); cursor:pointer; text-align:center; transition:all .2s; }
         .attach-choice-btn.active { background:var(--accent); color:var(--bg-card); border-color:var(--accent); }
 
+        /* ── V1.4 PHASE 6: OBSERVER + VALUES ────────────────────── */
+        .ladder-rung { background:var(--bg-card); border-radius:14px; padding:14px 16px; margin-bottom:8px; border:1.5px solid var(--border-card); transition:border-color .3s; }
+        .ladder-rung-num { font-family:'Baloo 2',sans-serif; font-size:11px; font-weight:600; color:var(--body-muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:4px; }
+        .ladder-rung-text { font-family:'Fredoka',sans-serif; font-size:15px; color:var(--body-text); line-height:1.5; }
+        .ladder-rung.active { border-color:var(--accent); background:var(--accent-soft); }
+        .ladder-rung-active-text { color:var(--accent); font-weight:500; }
+        .ladder-sky { font-family:'Fredoka',sans-serif; font-size:15px; color:var(--body-muted); font-style:italic; text-align:center; padding:16px 8px 8px; line-height:1.6; }
+
+        .values-domain { background:var(--bg-card); border-radius:14px; padding:14px 16px; margin-bottom:10px; border:1.5px solid var(--border-card); }
+        .values-domain-label { font-family:'Baloo 2',sans-serif; font-size:14px; font-weight:600; color:var(--accent); margin-bottom:8px; }
+        .values-tag-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+        .values-tag { font-family:'Fredoka',sans-serif; font-size:12px; padding:4px 10px; border-radius:20px; background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-border); display:flex; align-items:center; gap:4px; }
+        .values-tag-del { cursor:pointer; color:var(--body-muted); font-size:13px; line-height:1; }
+        .values-add-row { display:flex; gap:6px; }
+
+        .bullseye-wrap { position:relative; width:220px; height:220px; margin:16px auto; }
+        .bullseye-ring { position:absolute; border-radius:50%; border:2px solid var(--border-card); top:50%; left:50%; transform:translate(-50%,-50%); }
+        .bullseye-label { position:absolute; font-family:'Fredoka',sans-serif; font-size:10px; color:var(--body-muted); text-align:center; width:60px; }
+        .bullseye-dot { position:absolute; width:14px; height:14px; border-radius:50%; background:var(--accent); border:2px solid var(--bg-card); box-shadow:0 2px 6px rgba(0,0,0,.25); transform:translate(-50%,-50%); cursor:pointer; touch-action:none; }
+        .be-slider-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+        .be-slider-label { font-family:'Fredoka',sans-serif; font-size:13px; color:var(--body-text); width:130px; flex-shrink:0; }
+        .be-slider { flex:1; accent-color:var(--accent); }
+
         /* ── JOURNAL DETAIL MODAL ────────────────────────────────── */
         .journal-detail {
             display: none;
@@ -3036,8 +3059,165 @@
                 this.showToast('Reflection saved ✓');
                 this._renderAttachment(TOOL_REGISTRY.find(t => t.id === 'attachment'), document.getElementById('toolScreenContent'));
             },
-            _renderObserver(tool, el)     { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Observer — Phase 6</p>`; },
-            _renderValues(tool, el)       { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Values — Phase 6</p>`; },
+            /* ── V1.4 PHASE 6: OBSERVER (ladder) ──────────────── */
+            _renderObserver(tool, el) {
+                el.innerHTML = `<div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin-bottom:6px">What thought has you hooked?</div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:10px">Write it raw — exactly as it shows up.</div>
+                    <div class="diary-step" style="margin-bottom:14px">
+                        <textarea id="observerRawThought" placeholder="e.g. I always mess things up" class="diary-textarea"></textarea>
+                    </div>
+                    <button class="save-btn" onclick="app._observerBuildLadder()">Unhook it →</button>
+                    <button class="tool-history-btn" onclick="app._showToolHistory('observer')">📋 Past thoughts</button>
+                </div>`;
+            },
+
+            _observerBuildLadder() {
+                const raw = document.getElementById('observerRawThought')?.value.trim();
+                if (!raw) { this.showToast('Enter the thought first'); return; }
+                const el = document.getElementById('toolScreenContent');
+                const r1 = this._esc(raw);
+                const r2 = `I'm having the thought that ${r1}`;
+                const r3 = `I notice I'm having the thought that ${r1}`;
+                el.innerHTML = `<div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin-bottom:12px">The unhooking ladder</div>
+                    <div class="ladder-rung">
+                        <div class="ladder-rung-num">Fused (hooked)</div>
+                        <div class="ladder-rung-text">"${r1}"</div>
+                    </div>
+                    <div style="text-align:center;color:var(--body-muted);font-size:18px;padding:2px 0">↓</div>
+                    <div class="ladder-rung">
+                        <div class="ladder-rung-num">Step back</div>
+                        <div class="ladder-rung-text">"${r2}"</div>
+                    </div>
+                    <div style="text-align:center;color:var(--body-muted);font-size:18px;padding:2px 0">↓</div>
+                    <div class="ladder-rung active">
+                        <div class="ladder-rung-num">Defused (watching)</div>
+                        <div class="ladder-rung-active-text ladder-rung-text">"${r3}"</div>
+                    </div>
+                    <div class="ladder-sky">You are the sky. Thoughts are just the weather passing through.</div>
+                    <button class="save-btn" onclick="app._saveObserver('${this._esc(raw).replace(/'/g,"\\'")}')">Save this one ✓</button>
+                    <button class="tool-history-btn" onclick="app._showToolHistory('observer')">📋 Past thoughts</button>
+                </div>`;
+            },
+
+            _saveObserver(rawThought) {
+                this.addToolEntry('observer', { thought: rawThought });
+                this.showToast('Saved ✓');
+                this._renderObserver(TOOL_REGISTRY.find(t => t.id === 'observer'), document.getElementById('toolScreenContent'));
+            },
+
+            /* ── V1.4 PHASE 6: VALUES (bullseye) ──────────────── */
+            _getValues() {
+                const def = { work:[], leisure:[], relationships:[], growth:[] };
+                return JSON.parse(localStorage.getItem('fulfillx.values') || JSON.stringify(def));
+            },
+            _saveValuesStore(v) {
+                localStorage.setItem('fulfillx.values', JSON.stringify(v));
+            },
+
+            _renderValues(tool, el) {
+                const vals = this._getValues();
+                const DOMAINS = [
+                    { key:'work',          label:'Work / Education' },
+                    { key:'leisure',       label:'Leisure' },
+                    { key:'relationships', label:'Relationships' },
+                    { key:'growth',        label:'Personal Growth / Health' }
+                ];
+                let domainHtml = DOMAINS.map(d => {
+                    const tags = (vals[d.key] || []).map((v, i) =>
+                        `<span class="values-tag">${this._esc(v)}<span class="values-tag-del" onclick="app._removeValue('${d.key}',${i})">×</span></span>`
+                    ).join('');
+                    return `<div class="values-domain">
+                        <div class="values-domain-label">${d.label}</div>
+                        <div class="values-tag-row" id="valTags_${d.key}">${tags || '<span style="font-family:Fredoka,sans-serif;font-size:12px;color:var(--body-muted);font-style:italic">None yet</span>'}</div>
+                        <div class="values-add-row">
+                            <input type="text" class="todo-add-input" id="valInput_${d.key}" placeholder="Add a value…"
+                                onkeydown="if(event.key==='Enter')app._addValue('${d.key}')">
+                            <button class="todo-add-btn" onclick="app._addValue('${d.key}')">+</button>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                // Bull's Eye sliders
+                const snap = this._getValues();
+                const beHtml = DOMAINS.map(d => {
+                    const existing = (this.getToolEntries()['values'] || [])[0]?.data?.alignment?.[d.key] ?? 5;
+                    return `<div class="be-slider-row">
+                        <span class="be-slider-label">${d.label}</span>
+                        <input type="range" class="be-slider" id="be_${d.key}" min="1" max="10" value="${existing}">
+                    </div>`;
+                }).join('');
+
+                el.innerHTML = `<div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin-bottom:6px">Your living values</div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:12px">Values are directions, not destinations — add, edit, live them.</div>
+                    ${domainHtml}
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin:16px 0 8px">Bull's Eye — how close are you?</div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:12px">10 = living fully by this · 1 = far from it right now</div>
+                    <div class="widget-box" style="margin-bottom:12px">${beHtml}</div>
+                    <button class="save-btn" onclick="app._saveBullseye()">Save snapshot ✓</button>
+                    <button class="tool-history-btn" onclick="app._showValuesHistory()">📋 Past snapshots</button>
+                </div>`;
+            },
+
+            _addValue(domain) {
+                const input = document.getElementById('valInput_' + domain);
+                const text = input ? input.value.trim() : '';
+                if (!text) return;
+                const vals = this._getValues();
+                if (!vals[domain]) vals[domain] = [];
+                vals[domain].push(text);
+                this._saveValuesStore(vals);
+                if (input) input.value = '';
+                this._renderValues(TOOL_REGISTRY.find(t => t.id === 'values'), document.getElementById('toolScreenContent'));
+            },
+
+            _removeValue(domain, idx) {
+                const vals = this._getValues();
+                if (vals[domain]) vals[domain].splice(idx, 1);
+                this._saveValuesStore(vals);
+                this._renderValues(TOOL_REGISTRY.find(t => t.id === 'values'), document.getElementById('toolScreenContent'));
+            },
+
+            _saveBullseye() {
+                const DOMAINS = ['work','leisure','relationships','growth'];
+                const alignment = {};
+                DOMAINS.forEach(d => {
+                    const el = document.getElementById('be_' + d);
+                    alignment[d] = el ? parseInt(el.value) : 5;
+                });
+                const vals = this._getValues();
+                this.addToolEntry('values', { alignment, values: JSON.parse(JSON.stringify(vals)) });
+                this.showToast('Snapshot saved ✓');
+            },
+
+            _showValuesHistory() {
+                const el = document.getElementById('toolScreenContent');
+                if (!el) return;
+                const entries = this.getToolEntries()['values'] || [];
+                const DOMAINS = [
+                    { key:'work', label:'Work' }, { key:'leisure', label:'Leisure' },
+                    { key:'relationships', label:'Relationships' }, { key:'growth', label:'Growth' }
+                ];
+                let html = `<div>
+                    <button class="tool-history-btn" style="margin-bottom:12px" onclick="app._renderValues(TOOL_REGISTRY.find(t=>t.id==='values'),document.getElementById('toolScreenContent'))">← Back to Values</button>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:17px;font-weight:700;color:var(--heading-primary);margin-bottom:10px">Past snapshots</div>`;
+                if (!entries.length) {
+                    html += `<div class="tool-history-empty">No snapshots yet. Save a Bull's Eye to start your history.</div>`;
+                } else {
+                    entries.forEach((entry, i) => {
+                        const align = entry.data.alignment || {};
+                        const scores = DOMAINS.map(d => `${d.label}: ${align[d.key] ?? '—'}`).join(' · ');
+                        html += `<div class="tool-history-item">
+                            <div class="tool-history-date">${entry.date}</div>
+                            <div class="tool-history-snippet">${scores}</div>
+                        </div>`;
+                    });
+                }
+                html += `</div>`;
+                el.innerHTML = html;
+            },
 
             /* ── HABITS MANAGER ───────────────────────────────────── */
             renderHabits() {
