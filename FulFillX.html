@@ -386,6 +386,24 @@
         .diary-readonly-label { font-family:'Baloo 2',sans-serif; font-size:12px; font-weight:600; color:var(--heading-secondary); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
         .diary-readonly-value { font-family:'Fredoka',sans-serif; font-size:14px; color:var(--body-text); line-height:1.5; background:var(--accent-soft); border-radius:8px; padding:8px 10px; }
 
+        /* ── V1.4 PHASE 4: MIND DUMP + 5-4-3-2-1 ───────────────── */
+        .dump-dur-row { display:flex; gap:8px; margin-bottom:14px; }
+        .dump-dur-btn { flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--accent-border); background:var(--accent-soft); font-family:'Fredoka',sans-serif; font-size:14px; font-weight:500; color:var(--accent); cursor:pointer; text-align:center; transition:all .2s; }
+        .dump-dur-btn.active,.dump-dur-btn:active { background:var(--accent); color:var(--bg-card); border-color:var(--accent); }
+        .dump-timer { font-family:'Baloo 2',sans-serif; font-size:36px; font-weight:700; color:var(--heading-primary); text-align:center; margin:10px 0; }
+        .dump-line { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border-card); }
+        .dump-line:last-of-type { border-bottom:none; }
+        .dump-line-text { flex:1; font-family:'Fredoka',sans-serif; font-size:14px; color:var(--body-text); }
+        .dump-line-text.crossed { text-decoration:line-through; color:var(--body-muted); }
+
+        .ground-sense { background:var(--bg-card); border-radius:16px; padding:18px; margin-bottom:12px; border:1.5px solid var(--border-card); text-align:center; }
+        .ground-sense-count { font-family:'Baloo 2',sans-serif; font-size:48px; font-weight:700; color:var(--accent); line-height:1; }
+        .ground-sense-label { font-family:'Fredoka',sans-serif; font-size:18px; color:var(--heading-primary); margin:4px 0 10px; }
+        .ground-sense-instruction { font-family:'Fredoka',sans-serif; font-size:13px; color:var(--body-muted); margin-bottom:12px; }
+        .ground-inputs { text-align:left; }
+        .ground-input-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+        .ground-input-num { font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:600; color:var(--accent); width:18px; flex-shrink:0; }
+
         /* ── JOURNAL DETAIL MODAL ────────────────────────────────── */
         .journal-detail {
             display: none;
@@ -2691,8 +2709,143 @@
             },
 
             // Stubs — replaced/filled in later phases
-            _renderBraindump(tool, el)    { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Mind Dump — Phase 4</p>`; },
-            _renderGrounding(tool, el)    { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>5-4-3-2-1 — Phase 4</p>`; },
+            /* ── V1.4 PHASE 4: MIND DUMP ──────────────────────── */
+            _renderBraindump(tool, el) {
+                this._dumpTimer = null;
+                el.innerHTML = `<div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:17px;font-weight:600;color:var(--heading-primary);margin-bottom:6px">Choose your dump time</div>
+                    <div class="dump-dur-row">
+                        <button class="dump-dur-btn" data-min="2"  onclick="app._dumpPickDur(2)">2 min</button>
+                        <button class="dump-dur-btn" data-min="5"  onclick="app._dumpPickDur(5)">5 min</button>
+                        <button class="dump-dur-btn" data-min="10" onclick="app._dumpPickDur(10)">10 min</button>
+                    </div>
+                    <div id="dumpTimerArea" style="display:none">
+                        <div class="dump-timer" id="dumpTimerDisp">0:00</div>
+                        <button class="save-btn" id="dumpStartBtn" style="margin-bottom:12px" onclick="app._dumpStart()">Start writing</button>
+                    </div>
+                    <div id="dumpWriteArea" style="display:none">
+                        <div class="dump-timer" id="dumpCountdown"></div>
+                        <textarea id="dumpText" style="width:100%;min-height:140px;resize:vertical;padding:12px;border:1.5px solid var(--input-border);border-radius:12px;font-family:'Fredoka',sans-serif;font-size:14px;background:var(--input-bg);color:var(--input-text)" placeholder="Just write — anything and everything…"></textarea>
+                        <button class="save-btn" style="margin-top:10px" onclick="app._dumpReview()">Done — review it</button>
+                    </div>
+                    <div id="dumpReviewArea" style="display:none">
+                        <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin-bottom:8px">Cross off what doesn't matter</div>
+                        <div id="dumpLineList"></div>
+                        <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin:14px 0 8px">What remains as next actions?</div>
+                        <textarea id="dumpActions" style="width:100%;min-height:80px;resize:vertical;padding:12px;border:1.5px solid var(--input-border);border-radius:12px;font-family:'Fredoka',sans-serif;font-size:14px;background:var(--input-bg);color:var(--input-text)" placeholder="e.g. Reply to Sam, book dentist…"></textarea>
+                        <button class="save-btn" style="margin-top:10px" onclick="app._dumpSave()">Save next actions ✓</button>
+                        <button class="tool-history-btn" onclick="app._showToolHistory('mind_dump')">📋 Past entries</button>
+                    </div>
+                </div>`;
+            },
+
+            _dumpPickDur(mins) {
+                this._dumpMins = mins;
+                document.querySelectorAll('.dump-dur-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.min) === mins));
+                const area = document.getElementById('dumpTimerArea');
+                if (area) {
+                    area.style.display = '';
+                    const disp = document.getElementById('dumpTimerDisp');
+                    if (disp) disp.textContent = `${mins}:00`;
+                }
+            },
+
+            _dumpStart() {
+                const mins = this._dumpMins || 5;
+                let secs = mins * 60;
+                document.getElementById('dumpTimerArea').style.display = 'none';
+                document.getElementById('dumpWriteArea').style.display = '';
+                const disp = document.getElementById('dumpCountdown');
+                const fmt = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+                if (disp) disp.textContent = fmt(secs);
+                this._dumpTimer = setInterval(() => {
+                    secs--;
+                    if (disp) disp.textContent = fmt(secs);
+                    if (secs <= 0) { clearInterval(this._dumpTimer); this._dumpReview(); }
+                }, 1000);
+            },
+
+            _dumpReview() {
+                if (this._dumpTimer) { clearInterval(this._dumpTimer); this._dumpTimer = null; }
+                document.getElementById('dumpWriteArea').style.display = 'none';
+                document.getElementById('dumpReviewArea').style.display = '';
+                const raw = (document.getElementById('dumpText')?.value || '').split('\n').filter(l => l.trim());
+                const list = document.getElementById('dumpLineList');
+                if (!list) return;
+                list.innerHTML = raw.map((line, i) => `<div class="dump-line">
+                    <button class="todo-check" onclick="app._dumpCross(this,${i})" style="flex-shrink:0"></button>
+                    <span class="dump-line-text" id="dumpLine${i}">${this._esc(line)}</span>
+                </div>`).join('');
+            },
+
+            _dumpCross(btn, idx) {
+                btn.classList.toggle('done');
+                btn.textContent = btn.classList.contains('done') ? '✓' : '';
+                const span = document.getElementById('dumpLine' + idx);
+                if (span) span.classList.toggle('crossed', btn.classList.contains('done'));
+            },
+
+            _dumpSave() {
+                const actions = document.getElementById('dumpActions')?.value.trim() || '';
+                this.addToolEntry('mind_dump', { actions });
+                this.logToolUsage('mind_dump');
+                this.showToast('Saved ✓');
+                this._renderBraindump(TOOL_REGISTRY.find(t => t.id === 'mind_dump'), document.getElementById('toolScreenContent'));
+            },
+
+            /* ── V1.4 PHASE 4: 5-4-3-2-1 GROUNDING ───────────── */
+            _renderGrounding(tool, el) {
+                this._groundStep = 0;
+                this._groundData = {};
+                this._doGroundStep(el);
+            },
+
+            _doGroundStep(el) {
+                if (!el) el = document.getElementById('toolScreenContent');
+                const SENSES = [
+                    { count:5, sense:'things you can SEE',  key:'see',   icon:'👁️' },
+                    { count:4, sense:'things you can HEAR', key:'hear',  icon:'👂' },
+                    { count:3, sense:'things you can TOUCH',key:'touch', icon:'✋' },
+                    { count:2, sense:'things you can SMELL',key:'smell', icon:'👃' },
+                    { count:1, sense:'thing you can TASTE', key:'taste', icon:'👅' }
+                ];
+                const step = this._groundStep;
+                if (step >= SENSES.length) {
+                    this.logToolUsage('grounding');
+                    el.innerHTML = `<div style="text-align:center;padding:20px 0">
+                        <div style="font-size:48px;margin-bottom:12px">🌿</div>
+                        <div style="font-family:'Baloo 2',sans-serif;font-size:22px;font-weight:700;color:var(--heading-primary);margin-bottom:8px">You're grounded.</div>
+                        <div style="font-family:'Fredoka',sans-serif;font-size:14px;color:var(--body-muted);margin-bottom:24px">Take a breath. You're here.</div>
+                        <button class="save-btn" onclick="app._renderGrounding(TOOL_REGISTRY.find(t=>t.id==='grounding'),document.getElementById('toolScreenContent'))">Go again</button>
+                    </div>`;
+                    return;
+                }
+                const s = SENSES[step];
+                let inputRows = '';
+                for (let i = 0; i < s.count; i++) {
+                    inputRows += `<div class="ground-input-row">
+                        <span class="ground-input-num">${i+1}</span>
+                        <input type="text" class="todo-add-input" id="ground_${s.key}_${i}" placeholder="…">
+                    </div>`;
+                }
+                el.innerHTML = `<div>
+                    <div class="ground-sense">
+                        <div class="ground-sense-count">${s.count}</div>
+                        <div class="ground-sense-label">${s.icon} ${s.sense}</div>
+                        <div class="ground-sense-instruction">Name ${s.count} ${s.count === 1 ? 'thing' : 'things'} right now.</div>
+                        <div class="ground-inputs">${inputRows}</div>
+                    </div>
+                    <button class="save-btn" onclick="app._groundNext('${s.key}',${s.count})">Next →</button>
+                </div>`;
+            },
+
+            _groundNext(key, count) {
+                const vals = [];
+                for (let i = 0; i < count; i++) vals.push(document.getElementById(`ground_${key}_${i}`)?.value.trim() || '');
+                this._groundData[key] = vals;
+                this._groundStep++;
+                this._doGroundStep(document.getElementById('toolScreenContent'));
+            },
             _renderNSReset(tool, el)      { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>NS Reset — Phase 5</p>`; },
             _renderAttachment(tool, el)   { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Attachment — Phase 5</p>`; },
             _renderObserver(tool, el)     { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Observer — Phase 6</p>`; },
