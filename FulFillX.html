@@ -369,6 +369,23 @@
         .tool-screen-topbar { display:flex; justify-content:space-between; align-items:center; padding:48px 20px 16px; flex-shrink:0; border-bottom:1px solid var(--border-card); }
         .tool-screen-title { font-family:'Baloo 2',sans-serif; font-size:18px; font-weight:700; color:var(--heading-primary); }
 
+        /* ── V1.4 PHASE 2: DIARY FLOW + HISTORY ─────────────────── */
+        .diary-step { background:var(--bg-card); border-radius:14px; padding:14px 16px; margin-bottom:12px; border:1.5px solid var(--border-card); }
+        .diary-step-label { font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:600; color:var(--accent); margin-bottom:6px; }
+        .diary-step textarea { width:100%; min-height:72px; resize:vertical; }
+        .diary-footer-note { font-family:'Fredoka',sans-serif; font-size:13px; color:var(--body-muted); font-style:italic; text-align:center; padding:8px 0 4px; }
+        .tool-history-btn { width:100%; margin-top:4px; padding:9px; border:1.5px solid var(--border-card); border-radius:10px; background:transparent; font-family:'Fredoka',sans-serif; font-size:13px; color:var(--body-muted); cursor:pointer; text-align:center; transition:all .2s; }
+        .tool-history-btn:hover { border-color:var(--accent); color:var(--accent); }
+        .tool-history-list { margin-top:8px; }
+        .tool-history-item { background:var(--bg-card); border-radius:12px; padding:12px 14px; margin-bottom:8px; border:1.5px solid var(--border-card); cursor:pointer; }
+        .tool-history-item:active { opacity:.75; }
+        .tool-history-date { font-family:'Baloo 2',sans-serif; font-size:12px; font-weight:600; color:var(--accent); margin-bottom:4px; }
+        .tool-history-snippet { font-family:'Fredoka',sans-serif; font-size:13px; color:var(--body-text); line-height:1.4; }
+        .tool-history-empty { font-family:'Fredoka',sans-serif; font-size:13px; color:var(--body-muted); font-style:italic; text-align:center; padding:12px 0; }
+        .diary-readonly-field { margin-bottom:10px; }
+        .diary-readonly-label { font-family:'Baloo 2',sans-serif; font-size:12px; font-weight:600; color:var(--heading-secondary); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+        .diary-readonly-value { font-family:'Fredoka',sans-serif; font-size:14px; color:var(--body-text); line-height:1.5; background:var(--accent-soft); border-radius:8px; padding:8px 10px; }
+
         /* ── JOURNAL DETAIL MODAL ────────────────────────────────── */
         .journal-detail {
             display: none;
@@ -2532,8 +2549,118 @@
                 }
             },
 
+            /* ── V1.4 PHASE 2: TOOL ENTRIES STORE ─────────────── */
+            getToolEntries() {
+                return JSON.parse(localStorage.getItem('fulfillx.toolEntries') || '{}');
+            },
+            saveToolEntries(entries) {
+                localStorage.setItem('fulfillx.toolEntries', JSON.stringify(entries));
+            },
+            addToolEntry(toolId, data) {
+                const entries = this.getToolEntries();
+                if (!entries[toolId]) entries[toolId] = [];
+                entries[toolId].unshift({ date: this.getTodayKey(), ts: Date.now(), data });
+                this.saveToolEntries(entries);
+            },
+            logToolUsage(toolId) {
+                const usage = JSON.parse(localStorage.getItem('fulfillx.toolUsage') || '{}');
+                if (!usage[toolId]) usage[toolId] = [];
+                const today = this.getTodayKey();
+                if (!usage[toolId].includes(today)) usage[toolId].push(today);
+                localStorage.setItem('fulfillx.toolUsage', JSON.stringify(usage));
+            },
+
+            /* ── V1.4 PHASE 2: DIARY FLOW ENGINE ──────────────── */
+            _renderDiaryFlow(tool, el) {
+                const steps = tool.config.steps || [];
+                const footer = tool.config.footer || '';
+                let html = `<div style="padding-bottom:4px">`;
+                steps.forEach(s => {
+                    html += `<div class="diary-step">
+                        <div class="diary-step-label">${s.label}</div>
+                        <div class="widget-prompt">${s.prompt}</div>
+                        <textarea class="diary-textarea" data-key="${s.key}" placeholder="Write here…"></textarea>
+                    </div>`;
+                });
+                if (footer) html += `<div class="diary-footer-note">${footer}</div>`;
+                html += `<button class="save-btn" style="margin-top:8px" onclick="app._saveDiaryEntry('${tool.id}')">Save entry ✓</button>
+                    <button class="tool-history-btn" onclick="app._showToolHistory('${tool.id}')">📋 Past entries</button>
+                </div>`;
+                el.innerHTML = html;
+            },
+
+            _saveDiaryEntry(toolId) {
+                const el = document.getElementById('toolScreenContent');
+                const tool = TOOL_REGISTRY.find(t => t.id === toolId);
+                if (!el || !tool) return;
+                const data = {};
+                el.querySelectorAll('.diary-textarea').forEach(ta => {
+                    data[ta.dataset.key] = ta.value.trim();
+                });
+                // NVC: assemble draft message (handled in Phase 3; stub here)
+                if (tool.config.draftMessage) {
+                    const o = data.observation || '', f = data.feeling || '', n = data.need || '', r = data.request || '';
+                    data._draft = `When ${o}, I feel ${f}. I need ${n}. Would you be willing to: ${r}?`;
+                }
+                this.addToolEntry(toolId, data);
+                this.showToast('Entry saved ✓');
+                this._renderDiaryFlow(tool, el); // reset fields
+            },
+
+            _showToolHistory(toolId) {
+                const tool = TOOL_REGISTRY.find(t => t.id === toolId);
+                const el = document.getElementById('toolScreenContent');
+                if (!el || !tool) return;
+                const entries = (this.getToolEntries()[toolId] || []);
+                const steps = tool.config.steps || [];
+                const firstKey = steps[0]?.key;
+                let html = `<div>
+                    <button class="tool-history-btn" style="margin-bottom:12px" onclick="app._renderToolScreen(TOOL_REGISTRY.find(t=>t.id==='${toolId}'))">← Back to ${tool.name}</button>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:17px;font-weight:700;color:var(--heading-primary);margin-bottom:10px">Past entries</div>`;
+                if (!entries.length) {
+                    html += `<div class="tool-history-empty">No entries yet. Complete the flow to save your first one.</div>`;
+                } else {
+                    entries.forEach((entry, i) => {
+                        const snippet = firstKey ? (entry.data[firstKey] || '').slice(0, 80) : '';
+                        html += `<div class="tool-history-item" onclick="app._openDiaryEntry('${toolId}',${i})">
+                            <div class="tool-history-date">${entry.date}</div>
+                            ${snippet ? `<div class="tool-history-snippet">${this._esc(snippet)}${snippet.length >= 80 ? '…' : ''}</div>` : ''}
+                        </div>`;
+                    });
+                }
+                html += `</div>`;
+                el.innerHTML = html;
+            },
+
+            _openDiaryEntry(toolId, idx) {
+                const tool = TOOL_REGISTRY.find(t => t.id === toolId);
+                const el = document.getElementById('toolScreenContent');
+                if (!el || !tool) return;
+                const entry = (this.getToolEntries()[toolId] || [])[idx];
+                if (!entry) return;
+                const steps = tool.config.steps || [];
+                let html = `<div>
+                    <button class="tool-history-btn" style="margin-bottom:12px" onclick="app._showToolHistory('${toolId}')">← Back to history</button>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:15px;font-weight:600;color:var(--heading-primary);margin-bottom:14px">${entry.date}</div>`;
+                steps.forEach(s => {
+                    const val = entry.data[s.key] || '';
+                    html += `<div class="diary-readonly-field">
+                        <div class="diary-readonly-label">${s.label}</div>
+                        <div class="diary-readonly-value">${val ? this._esc(val) : '<em style="opacity:.5">—</em>'}</div>
+                    </div>`;
+                });
+                if (tool.config.draftMessage && entry.data._draft) {
+                    html += `<div class="diary-readonly-field">
+                        <div class="diary-readonly-label">Draft message</div>
+                        <div class="diary-readonly-value">${this._esc(entry.data._draft)}</div>
+                    </div>`;
+                }
+                if (tool.config.footer) html += `<div class="diary-footer-note">${tool.config.footer}</div>`;
+                html += `</div>`;
+                el.innerHTML = html;
+            },
+
             // Stubs — replaced/filled in later phases
-            _renderDiaryFlow(tool, el)    { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Diary flow — Phase 2</p>`; },
             _renderBraindump(tool, el)    { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Mind Dump — Phase 4</p>`; },
             _renderGrounding(tool, el)    { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>5-4-3-2-1 — Phase 4</p>`; },
             _renderNSReset(tool, el)      { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>NS Reset — Phase 5</p>`; },
