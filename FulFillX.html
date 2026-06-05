@@ -404,6 +404,24 @@
         .ground-input-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
         .ground-input-num { font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:600; color:var(--accent); width:18px; flex-shrink:0; }
 
+        /* ── V1.4 PHASE 5: NS RESET + ATTACHMENT ────────────────── */
+        .state-option { background:var(--bg-card); border-radius:14px; padding:14px 16px; margin-bottom:8px; border:1.5px solid var(--border-card); cursor:pointer; transition:all .2s; }
+        .state-option:active, .state-option.selected { border-color:var(--accent); background:var(--accent-soft); }
+        .state-option-name { font-family:'Baloo 2',sans-serif; font-size:15px; font-weight:600; color:var(--heading-primary); }
+        .state-option-desc { font-family:'Fredoka',sans-serif; font-size:13px; color:var(--body-muted); margin-top:2px; }
+        .breath-circle-wrap { display:flex; flex-direction:column; align-items:center; padding:16px 0; }
+        .breath-circle { width:100px; height:100px; border-radius:50%; background:var(--accent-soft); border:3px solid var(--accent); display:flex; align-items:center; justify-content:center; font-family:'Fredoka',sans-serif; font-size:13px; color:var(--accent); text-align:center; transition:transform .6s ease, opacity .4s ease; margin-bottom:12px; }
+        .breath-instruction { font-family:'Baloo 2',sans-serif; font-size:16px; font-weight:600; color:var(--heading-primary); text-align:center; margin-bottom:6px; }
+        .breath-sublabel { font-family:'Fredoka',sans-serif; font-size:13px; color:var(--body-muted); text-align:center; }
+
+        .attach-style-card { background:var(--bg-card); border-radius:14px; padding:14px 16px; margin-bottom:8px; border:1.5px solid var(--border-card); cursor:pointer; transition:all .2s; }
+        .attach-style-card:active, .attach-style-card.selected { border-color:var(--accent); background:var(--accent-soft); }
+        .attach-style-name { font-family:'Baloo 2',sans-serif; font-size:15px; font-weight:600; color:var(--heading-primary); }
+        .attach-style-desc { font-family:'Fredoka',sans-serif; font-size:13px; color:var(--body-muted); margin-top:3px; line-height:1.4; }
+        .attach-choice-row { display:flex; gap:8px; margin:8px 0; }
+        .attach-choice-btn { flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--accent-border); background:var(--accent-soft); font-family:'Fredoka',sans-serif; font-size:13px; font-weight:500; color:var(--accent); cursor:pointer; text-align:center; transition:all .2s; }
+        .attach-choice-btn.active { background:var(--accent); color:var(--bg-card); border-color:var(--accent); }
+
         /* ── JOURNAL DETAIL MODAL ────────────────────────────────── */
         .journal-detail {
             display: none;
@@ -2846,8 +2864,178 @@
                 this._groundStep++;
                 this._doGroundStep(document.getElementById('toolScreenContent'));
             },
-            _renderNSReset(tool, el)      { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>NS Reset — Phase 5</p>`; },
-            _renderAttachment(tool, el)   { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Attachment — Phase 5</p>`; },
+            /* ── V1.4 PHASE 5: NERVOUS-SYSTEM RESET ───────────── */
+            _renderNSReset(tool, el) {
+                el.innerHTML = `<div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin-bottom:6px">Where are you right now?</div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:12px">No wrong state — just an honest check-in.</div>
+                    <div class="state-option" onclick="app._nsBreath(this,'ventral')">
+                        <div class="state-option-name">Safe &amp; connected</div>
+                        <div class="state-option-desc">Calm, open, present — you feel OK</div>
+                    </div>
+                    <div class="state-option" onclick="app._nsBreath(this,'sympathetic')">
+                        <div class="state-option-name">Fight-or-flight</div>
+                        <div class="state-option-desc">Wired, anxious, tense, racing thoughts</div>
+                    </div>
+                    <div class="state-option" onclick="app._nsBreath(this,'dorsal')">
+                        <div class="state-option-name">Shut down</div>
+                        <div class="state-option-desc">Flat, numb, disconnected, depleted</div>
+                    </div>
+                </div>`;
+            },
+
+            _nsBreath(btn, state) {
+                document.querySelectorAll('.state-option').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                const el = document.getElementById('toolScreenContent');
+                if (!el) return;
+                const STATE_LABELS = { ventral:'Safe & connected', sympathetic:'Fight-or-flight', dorsal:'Shut down' };
+                const label = STATE_LABELS[state] || state;
+                el.innerHTML = `<div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:15px;font-weight:600;color:var(--heading-primary);margin-bottom:4px">You said: ${label}</div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:14px">Let's take three physiological sighs. Follow the circle.</div>
+                    <div class="breath-circle-wrap">
+                        <div class="breath-circle" id="breathCircle">Ready</div>
+                        <div class="breath-instruction" id="breathInstr">Tap to begin</div>
+                        <div class="breath-sublabel" id="breathSub">Two short nasal inhales · then a long mouth exhale</div>
+                    </div>
+                    <button class="save-btn" id="breathStartBtn" onclick="app._nsStartBreath('${state}')">Begin</button>
+                    <div id="breathDoneArea" style="display:none;margin-top:12px">
+                        <div style="text-align:center;font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin-bottom:12px">How do you feel now?</div>
+                        <div class="state-option" onclick="app._nsComplete('${state}','better')"><div class="state-option-name">Better — calmer</div></div>
+                        <div class="state-option" onclick="app._nsComplete('${state}','same')"><div class="state-option-name">About the same</div></div>
+                        <div class="state-option" onclick="app._nsComplete('${state}','more')"><div class="state-option-name">Need more</div></div>
+                    </div>
+                </div>`;
+            },
+
+            _nsStartBreath(state) {
+                document.getElementById('breathStartBtn').style.display = 'none';
+                const circle  = document.getElementById('breathCircle');
+                const instr   = document.getElementById('breathInstr');
+                const sub     = document.getElementById('breathSub');
+                const ROUNDS  = 3;
+                let round = 0;
+                const phases = [
+                    { label:'Inhale 1',   sub:'Short sniff through nose',  scale:1.2, dur:700 },
+                    { label:'Inhale 2',   sub:'Second short sniff',        scale:1.35,dur:700 },
+                    { label:'Exhale…',    sub:'Long breath out through mouth', scale:.9, dur:3000 }
+                ];
+                let phaseIdx = 0;
+                const tick = () => {
+                    if (round >= ROUNDS) {
+                        circle.textContent = '✓';
+                        circle.style.transform = 'scale(1)';
+                        instr.textContent = '3 rounds complete';
+                        sub.textContent = '';
+                        document.getElementById('breathDoneArea').style.display = '';
+                        return;
+                    }
+                    const p = phases[phaseIdx];
+                    circle.textContent = p.label;
+                    instr.textContent  = p.label;
+                    sub.textContent    = p.sub;
+                    circle.style.transform = `scale(${p.scale})`;
+                    phaseIdx++;
+                    if (phaseIdx >= phases.length) { phaseIdx = 0; round++; }
+                    setTimeout(tick, p.dur);
+                };
+                tick();
+            },
+
+            _nsComplete(state, outcome) {
+                this.logToolUsage('ns_reset');
+                this.showToast('Done ✓');
+                this._renderNSReset(TOOL_REGISTRY.find(t => t.id === 'ns_reset'), document.getElementById('toolScreenContent'));
+            },
+
+            /* ── V1.4 PHASE 5: ATTACHMENT ──────────────────────── */
+            _renderAttachment(tool, el) {
+                const saved = localStorage.getItem('fulfillx.attachmentStyle');
+                if (!saved) {
+                    this._renderAttachmentFirstRun(el);
+                } else {
+                    this._renderAttachmentReflection(el, saved);
+                }
+            },
+
+            _renderAttachmentFirstRun(el) {
+                const STYLES = [
+                    { id:'secure',   name:'Secure',   desc:"You're generally comfortable with closeness and can express needs. You trust relationships without much anxiety or avoidance." },
+                    { id:'anxious',  name:'Anxious',  desc:'You tend to worry about whether others care, crave closeness but fear it slipping away, and can become preoccupied when something feels off.' },
+                    { id:'avoidant', name:'Avoidant', desc:"You value independence and can find closeness uncomfortable. You may pull back or go quiet when things get emotionally intense." }
+                ];
+                el.innerHTML = `<div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin-bottom:4px">Identify your style</div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:14px;line-height:1.5">This is a pattern, not a verdict — most people are a mix. Pick the one that fits most of the time.</div>
+                    ${STYLES.map(s => `<div class="attach-style-card" onclick="app._setAttachmentStyle('${s.id}')">
+                        <div class="attach-style-name">${s.name}</div>
+                        <div class="attach-style-desc">${s.desc}</div>
+                    </div>`).join('')}
+                    <div style="font-family:'Fredoka',sans-serif;font-size:12px;color:var(--body-muted);margin-top:10px;font-style:italic">You can change this any time in the tool.</div>
+                </div>`;
+            },
+
+            _setAttachmentStyle(style) {
+                localStorage.setItem('fulfillx.attachmentStyle', style);
+                this.showToast('Style saved');
+                this._renderAttachmentReflection(document.getElementById('toolScreenContent'), style);
+            },
+
+            _renderAttachmentReflection(el, style) {
+                const STYLE_TIPS = {
+                    secure:   "You tend to feel secure — check if this is the situation speaking or an old pattern.",
+                    anxious:  "Your anxious system may be activating — notice the spike before you act on it.",
+                    avoidant: "Your avoidant system may be pulling you to withdraw — pause before you go silent."
+                };
+                const tip = STYLE_TIPS[style] || '';
+                const styleName = style.charAt(0).toUpperCase() + style.slice(1);
+                this._attachChoice = null;
+                el.innerHTML = `<div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:12px;color:var(--body-muted);margin-bottom:14px">Style: <strong>${styleName}</strong> · <button style="background:none;border:none;color:var(--accent);font-family:'Fredoka',sans-serif;font-size:12px;cursor:pointer;padding:0" onclick="app._renderAttachmentFirstRun(document.getElementById('toolScreenContent'))">Change</button></div>
+                    ${tip ? `<div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);font-style:italic;margin-bottom:14px;padding:8px 12px;background:var(--accent-soft);border-radius:10px">${tip}</div>` : ''}
+                    <div class="diary-step">
+                        <div class="diary-step-label">What just happened?</div>
+                        <textarea class="diary-textarea" id="attachQ1" placeholder="Write here…"></textarea>
+                    </div>
+                    <div class="diary-step">
+                        <div class="diary-step-label">What are you feeling or fearing?</div>
+                        <textarea class="diary-textarea" id="attachQ2" placeholder="Write here…"></textarea>
+                    </div>
+                    <div class="diary-step">
+                        <div class="diary-step-label">Is this the situation, or my pattern?</div>
+                        <div class="attach-choice-row">
+                            <button class="attach-choice-btn" id="attachChoiceSit" onclick="app._attachChoose('situation')">The situation</button>
+                            <button class="attach-choice-btn" id="attachChoicePat" onclick="app._attachChoose('my pattern')">My pattern</button>
+                        </div>
+                    </div>
+                    <div class="diary-step">
+                        <div class="diary-step-label">What would secure do here?</div>
+                        <textarea class="diary-textarea" id="attachQ4" placeholder="Write here…"></textarea>
+                    </div>
+                    <button class="save-btn" style="margin-top:8px" onclick="app._saveAttachment()">Save reflection ✓</button>
+                    <button class="tool-history-btn" onclick="app._showToolHistory('attachment')">📋 Past reflections</button>
+                </div>`;
+            },
+
+            _attachChoose(choice) {
+                this._attachChoice = choice;
+                document.getElementById('attachChoiceSit')?.classList.toggle('active', choice === 'situation');
+                document.getElementById('attachChoicePat')?.classList.toggle('active', choice === 'my pattern');
+            },
+
+            _saveAttachment() {
+                const data = {
+                    what:     document.getElementById('attachQ1')?.value.trim() || '',
+                    feeling:  document.getElementById('attachQ2')?.value.trim() || '',
+                    choice:   this._attachChoice || '',
+                    secure:   document.getElementById('attachQ4')?.value.trim() || '',
+                    style:    localStorage.getItem('fulfillx.attachmentStyle') || ''
+                };
+                this.addToolEntry('attachment', data);
+                this.showToast('Reflection saved ✓');
+                this._renderAttachment(TOOL_REGISTRY.find(t => t.id === 'attachment'), document.getElementById('toolScreenContent'));
+            },
             _renderObserver(tool, el)     { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Observer — Phase 6</p>`; },
             _renderValues(tool, el)       { el.innerHTML = `<p class="habit-empty" style="text-align:center;padding:24px 0">${tool.icon}<br><br>${tool.name}<br><br>Values — Phase 6</p>`; },
 
