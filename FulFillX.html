@@ -3421,6 +3421,22 @@
                     </div>`
                 ).join('') : `<p class="habit-empty">No scheduled habits yet — add some in the Habits tab.</p>`;
 
+                // Toolbox readout
+                const toolEntries = this.getToolEntries();
+                const toolUsage   = JSON.parse(localStorage.getItem('fulfillx.toolUsage') || '{}');
+                const toolRows = TOOL_REGISTRY.map(t => {
+                    const entryCount = (toolEntries[t.id] || []).length;
+                    const usageDates = toolUsage[t.id] || [];
+                    const lastUsed = entryCount > 0
+                        ? (toolEntries[t.id][0].date)
+                        : (usageDates.length > 0 ? usageDates[usageDates.length - 1] : null);
+                    if (!entryCount && !usageDates.length) return null;
+                    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border-card)">
+                        <span style="font-family:'Fredoka',sans-serif;font-size:14px;color:var(--body-text)">${t.icon} ${t.name}</span>
+                        <span style="font-family:'Baloo 2',sans-serif;font-size:12px;font-weight:600;color:var(--accent)">${entryCount ? entryCount + ' entr' + (entryCount === 1 ? 'y' : 'ies') : 'used ' + usageDates.length + '×'}${lastUsed ? ' · ' + lastUsed : ''}</span>
+                    </div>`;
+                }).filter(Boolean).join('');
+
                 document.getElementById('insights-content').innerHTML = `
                     <div style="padding-bottom: 20px;">
                         <div class="insight-stat">
@@ -3444,6 +3460,10 @@
                             <div class="insight-stat-value">${consistencyPct !== null ? consistencyPct + '%' : '—'}</div>
                             <div class="insight-stat-desc" style="margin-bottom:10px">${consistencyPct !== null ? 'of scheduled habit instances completed' : 'Start tracking to see consistency'}</div>
                             ${habitRows}
+                        </div>
+                        <div class="insight-stat">
+                            <div class="insight-stat-label">Toolbox</div>
+                            ${toolRows || `<p class="habit-empty">No tools used yet — try one from the Toolbox tab.</p>`}
                         </div>
                     </div>
                 `;
