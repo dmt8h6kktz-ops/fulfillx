@@ -2597,14 +2597,18 @@
                 el.querySelectorAll('.diary-textarea').forEach(ta => {
                     data[ta.dataset.key] = ta.value.trim();
                 });
-                // NVC: assemble draft message (handled in Phase 3; stub here)
+                // NVC: assemble draft message from the four parts
                 if (tool.config.draftMessage) {
-                    const o = data.observation || '', f = data.feeling || '', n = data.need || '', r = data.request || '';
+                    const o = data.observation || '…', f = data.feeling || '…', n = data.need || '…', r = data.request || '…';
                     data._draft = `When ${o}, I feel ${f}. I need ${n}. Would you be willing to: ${r}?`;
                 }
                 this.addToolEntry(toolId, data);
-                this.showToast('Entry saved ✓');
-                this._renderDiaryFlow(tool, el); // reset fields
+                if (tool.config.draftMessage && data._draft) {
+                    this._renderNVCDraft(tool, el, data._draft);
+                } else {
+                    this.showToast('Entry saved ✓');
+                    this._renderDiaryFlow(tool, el);
+                }
             },
 
             _showToolHistory(toolId) {
@@ -2658,6 +2662,32 @@
                 if (tool.config.footer) html += `<div class="diary-footer-note">${tool.config.footer}</div>`;
                 html += `</div>`;
                 el.innerHTML = html;
+            },
+
+            _renderNVCDraft(tool, el, draft) {
+                el.innerHTML = `<div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:17px;font-weight:700;color:var(--heading-primary);margin-bottom:6px">Your draft message</div>
+                    <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:12px">Based on your four answers — edit as needed before sending.</div>
+                    <div class="widget-box" style="margin-bottom:12px">
+                        <textarea class="diary-textarea" id="nvcDraftEdit" style="min-height:100px">${this._esc(draft)}</textarea>
+                    </div>
+                    <button class="save-btn" style="margin-top:0" onclick="app._copyNVCDraft()">Copy message</button>
+                    <button class="tool-history-btn" onclick="app._showToolHistory('nvc')">📋 Past entries</button>
+                    <button class="tool-history-btn" style="margin-top:6px" onclick="app._renderDiaryFlow(TOOL_REGISTRY.find(t=>t.id==='nvc'),document.getElementById('toolScreenContent'))">Start a new one</button>
+                </div>`;
+                this.showToast('Entry saved ✓');
+            },
+
+            _copyNVCDraft() {
+                const ta = document.getElementById('nvcDraftEdit');
+                if (!ta) return;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(ta.value).then(() => this.showToast('Copied!'));
+                } else {
+                    ta.select();
+                    document.execCommand('copy');
+                    this.showToast('Copied!');
+                }
             },
 
             // Stubs — replaced/filled in later phases
