@@ -2643,6 +2643,11 @@
             },
 
             closeTool() {
+                if (this._mdInProgress) {
+                    if (!confirm('Leave Mind Dump?\n\nYour current dump will be lost. Press Cancel to go back and tap Done when you\'re ready.')) return;
+                    if (this._dumpTimer) { clearInterval(this._dumpTimer); this._dumpTimer = null; }
+                    this._mdInProgress = false;
+                }
                 document.getElementById('toolScreen').classList.remove('active');
                 this._currentToolId = null;
             },
@@ -3006,6 +3011,7 @@
             /* ── V1.5: MIND DUMP REBUILD ─────────────────────────── */
             _renderMindDump(tool, el) {
                 if (this._dumpTimer) { clearInterval(this._dumpTimer); this._dumpTimer = null; }
+                this._mdInProgress = false;
                 const rem = JSON.parse(localStorage.getItem('fulfillx.mindDumpReminder') || '{"enabled":false,"day":0,"time":"20:00"}');
                 el.innerHTML = `<div>
                     <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin-bottom:6px">Choose your dump time</div>
@@ -3043,14 +3049,15 @@
                 const mins = this._mdMins || 5;
                 const el   = document.getElementById('toolScreenContent');
                 if (!el) return;
-                this._mdItems = [];
+                this._mdItems    = [];
+                this._mdInProgress = true;
                 el.innerHTML = `<div>
                     <div style="font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:600;color:var(--heading-primary);margin-bottom:4px">Dump it all out</div>
                     <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:12px">Press Enter for the next line. Don't filter — let it all out.</div>
                     <div class="widget-box" style="padding:10px 14px" id="mdItemsList">
                         <div class="dump-item-row"><span class="dump-num">1.</span><input class="dump-item-input" type="text" id="mdItem0" placeholder="What's on your mind?" autofocus onkeydown="app._mdItemKey(event,0)"></div>
                     </div>
-                    <button class="dump-done-btn" id="mdDoneBtn" onclick="app._mdCrossOut()">Done →</button>
+                    <button class="dump-done-btn" id="mdDoneBtn" style="display:block" onclick="app._mdCrossOut()">Done →</button>
                 </div>`;
                 setTimeout(() => document.getElementById('mdItem0')?.focus(), 80);
                 let secs = mins * 60;
@@ -3058,9 +3065,7 @@
                     secs--;
                     if (secs <= 0) {
                         clearInterval(this._dumpTimer); this._dumpTimer = null;
-                        const btn = document.getElementById('mdDoneBtn');
-                        if (btn) btn.style.display = '';
-                        this.showToast("Time's up — tap Done when ready");
+                        this.showToast("Time's up — tap Done when you're ready");
                     }
                 }, 1000);
             },
@@ -3080,6 +3085,7 @@
 
             _mdCrossOut() {
                 if (this._dumpTimer) { clearInterval(this._dumpTimer); this._dumpTimer = null; }
+                this._mdInProgress = false;
                 const list = document.getElementById('mdItemsList');
                 if (!list) return;
                 const items = [...list.querySelectorAll('.dump-item-input')].map(i => i.value.trim()).filter(Boolean);
