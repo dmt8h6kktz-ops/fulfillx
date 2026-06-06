@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Fredoka:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
     <style>
         /* ── DESIGN TOKENS ───────────────────────────────────────── */
         :root {
@@ -240,7 +241,10 @@
         .journal-icon {
             font-size: 30px;
             margin-right: 16px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
             animation: bounce 2.5s ease-in-out infinite;
         }
 
@@ -578,6 +582,10 @@
             padding: 8px;
             border-radius: 12px;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
         }
         .emoji-btn:hover { transform: scale(1.05); }
         .emoji-btn.active {
@@ -1454,7 +1462,7 @@
             <div class="screen active" id="home">
                 <div class="home-topbar">
                     <p class="brand-mark">FULFILL<span>X</span></p>
-                    <button class="gear-btn" onclick="app.openSettings()" aria-label="Settings">⚙</button>
+                    <button class="gear-btn" onclick="app.openSettings()" aria-label="Settings"><i class="ph ph-gear"></i></button>
                 </div>
                 <div class="week-strip" id="weekStrip"></div>
                 <div class="home-body">
@@ -1464,14 +1472,14 @@
                     <div class="home-spacer"></div>
                     <div class="home-journals">
                         <div class="journal-box" id="box-morning" onclick="app.openJournal('morning')">
-                            <span class="journal-icon">🌅</span>
+                            <span class="journal-icon"><i class="ph ph-sun-horizon"></i></span>
                             <div>
                                 <h3 class="journal-title">Morning</h3>
                                 <p class="journal-desc">Plan your day &amp; set intentions</p>
                             </div>
                         </div>
                         <div class="journal-box" id="box-evening" onclick="app.openJournal('evening')">
-                            <span class="journal-icon">🌙</span>
+                            <span class="journal-icon"><i class="ph ph-moon-stars"></i></span>
                             <div>
                                 <h3 class="journal-title">Evening</h3>
                                 <p class="journal-desc">Reflect on your day</p>
@@ -1634,7 +1642,7 @@
                 <div id="morningWidgets"></div>
                 <div class="photo-attach-row" id="morningPhotoRow">
                     <input type="file" id="morningPhotoInput" accept="image/*" style="display:none" onchange="app.setPhoto(app._journalDate||app.getTodayKey(),this,'morningPhotoRow')">
-                    <button class="photo-pick-btn" onclick="document.getElementById('morningPhotoInput').click()">📷 Add photo</button>
+                    <button class="photo-pick-btn" onclick="document.getElementById('morningPhotoInput').click()"><i class="ph ph-camera"></i> Add photo</button>
                 </div>
                 <button class="save-btn" onclick="app.saveJournal('morning')">Save Morning ✓</button>
             </div>
@@ -1668,7 +1676,7 @@
                 <div id="eveningWidgets"></div>
                 <div class="photo-attach-row" id="eveningPhotoRow">
                     <input type="file" id="eveningPhotoInput" accept="image/*" style="display:none" onchange="app.setPhoto(app._journalDate||app.getTodayKey(),this,'eveningPhotoRow')">
-                    <button class="photo-pick-btn" onclick="document.getElementById('eveningPhotoInput').click()">📷 Add photo</button>
+                    <button class="photo-pick-btn" onclick="document.getElementById('eveningPhotoInput').click()"><i class="ph ph-camera"></i> Add photo</button>
                 </div>
                 <button class="save-btn" onclick="app.saveJournal('evening')">Save Evening ✓</button>
             </div>
@@ -1676,7 +1684,7 @@
 
         <!-- TO-DO FAB (home screen only) -->
         <button class="todo-fab" id="todoFab" onclick="app.openTodoSheet()" aria-label="Today's To-Do">
-            ✓
+            <i class="ph ph-list-checks"></i>
             <span class="todo-fab-badge" id="todoFabBadge">0</span>
         </button>
 
@@ -1699,19 +1707,19 @@
 
         <div class="bottom-nav">
             <button class="nav-item active" onclick="app.switchTab('home', this)">
-                <span class="nav-icon">🏠</span><span>Home</span>
+                <span class="nav-icon"><i class="ph ph-house"></i></span><span>Home</span>
             </button>
             <button class="nav-item" onclick="app.switchTab('toolbox', this)">
-                <span class="nav-icon">🧰</span><span>Toolbox</span>
+                <span class="nav-icon"><i class="ph ph-toolbox"></i></span><span>Toolbox</span>
             </button>
             <button class="nav-item" onclick="app.switchTab('habits', this)">
-                <span class="nav-icon">✓</span><span>Habits</span>
+                <span class="nav-icon"><i class="ph ph-check-circle"></i></span><span>Habits</span>
             </button>
             <button class="nav-item" onclick="app.switchTab('insights', this)">
-                <span class="nav-icon">📊</span><span>Insights</span>
+                <span class="nav-icon"><i class="ph ph-chart-line"></i></span><span>Insights</span>
             </button>
             <button class="nav-item" id="nav-history" onclick="app.switchTab('history', this)">
-                <span class="nav-icon">📅</span><span>History</span>
+                <span class="nav-icon"><i class="ph ph-calendar-dots"></i></span><span>History</span>
             </button>
         </div>
 
@@ -1822,7 +1830,7 @@
         };
 
         const TOOL_REGISTRY = [
-            { id:'five_rs',       name:"The 5 R's",                icon:'🔁', group:'reflect',
+            { id:'five_rs',       name:"The 5 R's",                icon:'ph-repeat', group:'reflect',
               purpose:'Work through a craving or urge, step by step.',
               credit:'Four Steps by Dr. Jeffrey Schwartz (Brain Lock); adapted for cravings and expanded with a fifth step by Dr. Gabor Maté (In the Realm of Hungry Ghosts).',
               infoUse:'When an urge or craving shows up — for anything — and you want to meet it with awareness instead of autopilot.',
@@ -1834,7 +1842,7 @@
                 { key:'revalue',      label:'Revalue',           prompt:'Play it forward: what does giving in actually cost you?' },
                 { key:'recreate',     label:'Recreate',          prompt:'Reconnect to your values: what life or person are you choosing instead?' }
               ]}},
-            { id:'elephant',      name:'Elephant & Rider',         icon:'🐘', group:'reflect',
+            { id:'elephant',      name:'Elephant & Rider',         icon:'ph-paw-print', group:'reflect',
               purpose:'Catch the moment emotion takes the reins.',
               credit:'From Jonathan Haidt, The Happiness Hypothesis (2006).',
               infoUse:'When you reacted automatically and want to understand the pull behind it.',
@@ -1845,7 +1853,7 @@
                 { key:'rider_chose',    label:'The rider',     prompt:'Where was the rider? What would it have chosen?' },
                 { key:'catch_earlier',  label:'Next time',     prompt:'What might help you notice this turn earlier next time?' }
               ]}},
-            { id:'shadow',        name:'Shadow Work',               icon:'🌓', group:'reflect',
+            { id:'shadow',        name:'Shadow Work',               icon:'ph-yin-yang', group:'reflect',
               purpose:'Get curious about what you reject in yourself.',
               credit:'Concept by Carl Jung; practical exercise from Robert A. Johnson, Owning Your Own Shadow.',
               infoUse:'When someone triggers a judgment or reaction far bigger than the moment deserves.',
@@ -1856,7 +1864,7 @@
                 { key:'in_you',     label:'In you',        prompt:'Where might that same trait live, unowned, in you?' },
                 { key:'integrate',  label:'Integrate',     prompt:'What would it look like to accept or integrate that part?' }
               ]}},
-            { id:'stoic',         name:'Dichotomy of Control',      icon:'⚖️', group:'reflect',
+            { id:'stoic',         name:'Dichotomy of Control',      icon:'ph-scales', group:'reflect',
               purpose:"Separate what's yours to control from what isn't.",
               credit:'From Epictetus, the Enchiridion (Stoic philosophy).',
               infoUse:"When you're spinning on something stressful and want to spend energy where it counts.",
@@ -1867,7 +1875,7 @@
                 { key:'yours',      label:'Yours to control',       prompt:'What part IS up to you (your judgments, choices, actions)?' },
                 { key:'invest',     label:'Invest here',            prompt:"One thing in your control you'll put energy into?" }
               ]}},
-            { id:'shame',         name:'Shame Resilience',          icon:'🫂', group:'reflect',
+            { id:'shame',         name:'Shame Resilience',          icon:'ph-hand-heart', group:'reflect',
               purpose:"Loosen shame's grip when it hits.",
               credit:"From Brené Brown's Shame Resilience Theory (I Thought It Was Just Me).",
               infoUse:"When you feel small, exposed, or 'not enough' and want to come back to yourself.",
@@ -1878,7 +1886,7 @@
                 { key:'reach_out',    label:'Reach out',          prompt:'Who is someone safe you could share this with?' },
                 { key:'speak_shame',  label:'Speak shame',        prompt:"Say it plainly: what's the story you're afraid is true?" }
               ]}},
-            { id:'thought_record', name:'Thought Record',           icon:'🧩', group:'reflect',
+            { id:'thought_record', name:'Thought Record',           icon:'ph-note-pencil', group:'reflect',
               purpose:'Test a painful thought against the evidence.',
               credit:'Cognitive Behavioral Therapy — Dr. Aaron Beck; popularized by Dr. David Burns (Feeling Good).',
               infoUse:'When an upsetting thought feels like fact and you want to check it.',
@@ -1891,7 +1899,7 @@
                 { key:'balanced',     label:'Balanced view',    prompt:'A fairer, more accurate thought?' },
                 { key:'rerate',       label:'Re-rate feeling',  prompt:'How strong is the feeling now?' }
               ]}},
-            { id:'nvc',           name:'Nonviolent Communication',  icon:'💬', group:'reflect',
+            { id:'nvc',           name:'Nonviolent Communication',  icon:'ph-chats-circle', group:'reflect',
               purpose:'Say something hard without blame.',
               credit:'Nonviolent Communication — Dr. Marshall Rosenberg.',
               infoUse:'When you need to raise something difficult and want to be heard, not met with defensiveness.',
@@ -1902,37 +1910,37 @@
                 { key:'need',        label:'Need',        prompt:'What underlying need is behind that feeling?' },
                 { key:'request',     label:'Request',     prompt:'A clear, doable ask — what would help?' }
               ]}},
-            { id:'mind_dump',     name:'Mind Dump',                 icon:'🧠', group:'moment',
+            { id:'mind_dump',     name:'Mind Dump',                 icon:'ph-brain', group:'moment',
               purpose:'Clear a cluttered mind onto the page.',
               credit:'Mind dump technique described by Mo Gawdat.',
               infoUse:"When your head is noisy and overwhelmed and you can't think straight.",
               infoExample:"Before bed your mind is spinning. You dump it all out for a few minutes, cross off what doesn't matter, and turn the rest into a short action list — and your head is quieter.",
               type:'braindump', config:{}},
-            { id:'grounding',     name:'5-4-3-2-1 Grounding',       icon:'🌿', group:'moment',
+            { id:'grounding',     name:'5-4-3-2-1 Grounding',       icon:'ph-tree', group:'moment',
               purpose:'Anchor yourself in the present.',
               credit:'A widely used grounding technique.',
               infoUse:'When anxiety or overwhelm pulls you out of the moment.',
               infoExample:"Panic rising in a crowded room — name 5 things you see, 4 you hear, 3 you can touch, 2 you smell, 1 you taste, and you're back in your body.",
               type:'grounding', config:{}},
-            { id:'ns_reset',      name:'Nervous-System Reset',       icon:'🌊', group:'moment',
+            { id:'ns_reset',      name:'Nervous-System Reset',       icon:'ph-wind', group:'moment',
               purpose:'Find your state, then settle your body.',
               credit:'Polyvagal theory — Dr. Stephen Porges; practice via Deb Dana; physiological sigh via Dr. Andrew Huberman (Stanford).',
               infoUse:'When you feel wired and panicky, or flat and shut down, and want to bring your body back toward calm.',
               infoExample:"Before a hard conversation your chest is tight and your mind races. You name it as fight-or-flight, then take three physiological sighs before you walk in.",
               type:'statepractice', config:{}},
-            { id:'attachment',    name:'Attachment',                 icon:'💞', group:'know',
+            { id:'attachment',    name:'Attachment',                 icon:'ph-users-three', group:'know',
               purpose:'Understand your patterns in relationships.',
               credit:'Based on Levine & Heller, Attached (2010); attachment theory of Bowlby & Ainsworth.',
               infoUse:'When you feel a spike of worry, clinginess, or the urge to pull away in a relationship.',
               infoExample:"Someone doesn't reply for hours; your chest tightens and you start drafting a follow-up. This helps you catch that as your attachment system activating and choose your next move on purpose.",
               type:'attachment', config:{}},
-            { id:'observer',      name:'Observer',                   icon:'👁️', group:'know',
+            { id:'observer',      name:'Observer',                   icon:'ph-eye', group:'know',
               purpose:"Step back from a thought that's got you.",
               credit:'ACT cognitive defusion — Dr. Steven Hayes; popularized by Dr. Russ Harris.',
               infoUse:"When a harsh, sticky thought has you hooked and you're treating it as flat fact.",
               infoExample:"'I always mess things up' is on loop. Instead of arguing with it, you step back and watch it: 'I'm having the thought that I always mess things up.' The grip loosens.",
               type:'ladder', config:{}},
-            { id:'values',        name:'Values',                     icon:'🧭', group:'know',
+            { id:'values',        name:'Values',                     icon:'ph-compass', group:'know',
               purpose:'Find your compass — what you want to stand for.',
               credit:"ACT values work — Dr. Steven Hayes; Bull's Eye by Tobias Lundgren; via Dr. Russ Harris.",
               infoUse:"When you feel directionless or pulled by others' expectations and want to reconnect with what matters.",
@@ -2426,7 +2434,7 @@
                     entries[today][type] = data;
                 } else if (type === 'daytime') {
                     entries[today].daytime = {
-                        mood: document.querySelector('#daytimeMood .emoji-btn.active')?.textContent || '',
+                        mood: document.querySelector('#daytimeMood .emoji-btn.active')?.dataset.mood || '',
                         note: document.getElementById('daytimeNote').value
                     };
                     // Merge daytime habit checkboxes into shared entries[date].habits
@@ -2484,7 +2492,7 @@
                     const data = todayData.daytime || {};
                     document.getElementById('daytimeNote').value = data.note || '';
                     document.querySelectorAll('#daytimeMood .emoji-btn').forEach(b =>
-                        b.classList.toggle('active', b.textContent === data.mood));
+                        b.classList.toggle('active', b.dataset.mood === data.mood));
                     this.renderDaytimeHabits(todayData.habits || {});
                 }
             },
@@ -2544,10 +2552,18 @@
 
             renderEmojiScale() {
                 const container = document.getElementById('daytimeMood');
-                ['😔', '😐', '😊', '😄'].forEach(emoji => {
+                // data-mood stores the legacy emoji value so existing saved moods load correctly
+                const MOODS = [
+                    { val:'😔', icon:'ph-smiley-sad' },
+                    { val:'😐', icon:'ph-smiley-meh' },
+                    { val:'😊', icon:'ph-smiley'     },
+                    { val:'😄', icon:'ph-smiley-wink' }
+                ];
+                MOODS.forEach(({ val, icon }) => {
                     const btn = document.createElement('button');
                     btn.className = 'emoji-btn';
-                    btn.textContent = emoji;
+                    btn.dataset.mood = val;
+                    btn.innerHTML = `<i class="ph ${icon}"></i>`;
                     btn.onclick = function() {
                         document.querySelectorAll('#daytimeMood .emoji-btn').forEach(b => b.classList.remove('active'));
                         this.classList.add('active');
@@ -2571,7 +2587,7 @@
                     tools.forEach(t => {
                         html += `<div class="tool-list-card" onclick="app.openTool('${t.id}')">
                             <div class="tool-list-card-row">
-                                <span class="tool-list-icon">${t.icon}</span>
+                                <span class="tool-list-icon"><i class="ph ${t.icon}"></i></span>
                                 <div class="tool-list-body">
                                     <div class="tool-list-name">${t.name}</div>
                                     <div class="tool-list-purpose">${t.purpose}</div>
@@ -2588,7 +2604,7 @@
             openToolInfo(toolId) {
                 const t = TOOL_REGISTRY.find(x => x.id === toolId);
                 if (!t) return;
-                document.getElementById('toolInfoTitle').textContent   = `${t.icon} ${t.name}`;
+                document.getElementById('toolInfoTitle').innerHTML   = `<i class="ph ${t.icon}" style="margin-right:6px"></i>${t.name}`;
                 document.getElementById('toolInfoCredit').textContent  = t.credit;
                 document.getElementById('toolInfoUse').textContent     = t.infoUse;
                 document.getElementById('toolInfoExample').textContent = t.infoExample;
@@ -2603,7 +2619,7 @@
                 const t = TOOL_REGISTRY.find(x => x.id === toolId);
                 if (!t) return;
                 this._currentToolId = toolId;
-                document.getElementById('toolScreenTitle').textContent = `${t.icon} ${t.name}`;
+                document.getElementById('toolScreenTitle').innerHTML = `<i class="ph ${t.icon}" style="margin-right:6px"></i>${t.name}`;
                 this._renderToolScreen(t);
                 document.getElementById('toolScreen').classList.add('active');
             },
@@ -3817,9 +3833,9 @@
                 container.innerHTML = `<div class="day-detail-card">
                     <div style="font-family:'Baloo 2',sans-serif;font-size:15px;font-weight:600;color:var(--heading-primary);margin-bottom:12px">${dateLabel}</div>
                     ${photoHtml}
-                    ${mkSection('🌅','Morning','morning')}
-                    ${mkSection('☀️','Daytime','daytime')}
-                    ${mkSection('🌙','Evening','evening')}
+                    ${mkSection('<i class="ph ph-sun-horizon"></i>','Morning','morning')}
+                    ${mkSection('<i class="ph ph-sun"></i>','Daytime','daytime')}
+                    ${mkSection('<i class="ph ph-moon-stars"></i>','Evening','evening')}
                 </div>`;
 
                 if (this.hasPhoto(date)) {
@@ -4004,7 +4020,7 @@
                     row.innerHTML = `
                         <input type="file" id="${inputId}" accept="image/*" style="display:none"
                             onchange="app.setPhoto(app._journalDate||app.getTodayKey(),this,'${rowId}')">
-                        <button class="photo-pick-btn" onclick="document.getElementById('${inputId}').click()">📷 Add photo</button>`;
+                        <button class="photo-pick-btn" onclick="document.getElementById('${inputId}').click()"><i class="ph ph-camera"></i> Add photo</button>`;
                 }
             },
 
