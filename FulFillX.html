@@ -1252,6 +1252,13 @@
         .day-detail-chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
         .day-detail-chip { font-family:'Fredoka',sans-serif; font-size:12px; padding:3px 10px; border-radius:20px; }
         .day-detail-label { font-family:'Baloo 2',sans-serif; font-size:11px; font-weight:600; color:var(--heading-secondary); text-transform:uppercase; letter-spacing:.6px; margin-bottom:3px; }
+        /* detail-view photo: natural 4:3, cover-cropped, tappable */
+        .detail-photo { width:100%; aspect-ratio:4/3; object-fit:cover; object-position:center; border-radius:12px; display:block; cursor:pointer; }
+        /* inline habit/todo rows in read view */
+        .hist-habit-row { display:flex; align-items:center; gap:6px; padding:2px 0; font-family:'Fredoka',sans-serif; font-size:13px; }
+        /* full-image lightbox */
+        .photo-lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:300; align-items:center; justify-content:center; cursor:pointer; padding:16px; }
+        .photo-lightbox img { max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; }
 
         /* ── V1.3 PHASE 2: FAB + TO-DO SHEET ───────────────────── */
         .todo-fab {
@@ -1709,6 +1716,11 @@
         </div>
 
         <div class="toast" id="toast">Saved! ✓</div>
+
+        <!-- PHOTO LIGHTBOX -->
+        <div class="photo-lightbox" id="photoLightbox" onclick="this.style.display='none'" aria-label="Close photo">
+            <img id="lightboxImg" src="" alt="Full photo">
+        </div>
 
         <!-- TOOL INFO POPUP -->
         <div class="tool-info-overlay" id="toolInfoOverlay">
@@ -3750,67 +3762,64 @@
                 const container = document.getElementById('history-detail');
                 if (!container || !date) return;
 
-                const entries  = this.getEntries();
-                const dayData  = entries[date] || {};
-                const today    = this.getTodayKey();
-                const isPast   = date < today;
+                const entries = this.getEntries();
+                const dayData = entries[date] || {};
+                const config  = this.getConfig();
+                const habits  = this.getHabits().filter(h => h.active);
+                const dow     = new Date(date + 'T00:00:00').getDay();
 
                 const [y, m, d] = date.split('-').map(Number);
-                const dateLabel = new Date(y, m-1, d).toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+                const dateLabel = new Date(y, m-1, d).toLocaleDateString('en-US', {
+                    weekday:'long', month:'long', day:'numeric', year:'numeric'
+                });
 
-                const morningDone = dayData.morning && Object.keys(dayData.morning).length > 0;
-                const eveningDone = dayData.evening && Object.keys(dayData.evening).length > 0;
-                const daytimeDone = !!dayData.daytime;
-                const hasAny      = morningDone || eveningDone || daytimeDone;
-
-                // Journal chips
-                const chips = [['Morning', morningDone], ['Daytime', daytimeDone], ['Evening', eveningDone]].map(([label, done]) =>
-                    `<span class="day-detail-chip" style="background:${done ? 'var(--accent)' : 'var(--accent-soft)'};color:${done ? 'var(--bg-card)' : 'var(--body-muted)'}">${label}</span>`
-                ).join('');
-
-                // Main goal
-                const mainGoal  = dayData.morning?.maingoal || '';
-                const goalChoice = dayData.evening?.goalreview?.choice || '';
-                const goalHtml  = mainGoal ? `<div style="margin-bottom:10px">
-                    <div class="day-detail-label">Main Goal</div>
-                    <div style="font-family:'Fredoka',sans-serif;font-size:14px;color:var(--body-text)">${this._esc(mainGoal)}</div>
-                    ${goalChoice ? `<div style="font-size:12px;color:var(--body-muted);margin-top:2px">Worked toward it: ${goalChoice}</div>` : ''}
-                </div>` : '';
-
-                // Reflection snippet
-                const refl = dayData.evening?.reflection || '';
-                const reflHtml = refl ? `<div style="margin-bottom:10px">
-                    <div class="day-detail-label">Reflection</div>
-                    <div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-text);line-height:1.5">${this._esc(refl.length > 140 ? refl.slice(0,140) + '…' : refl)}</div>
-                </div>` : '';
-
-                // Habits
-                const habitsDone = Object.values(dayData.habits || {}).filter(Boolean).length;
-                const habitsHtml = habitsDone ? `<div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);margin-bottom:8px">${habitsDone} habit${habitsDone !== 1 ? 's' : ''} completed</div>` : '';
-
-                // Photo placeholder (filled async)
-                const photoPlaceholder = this.hasPhoto(date)
-                    ? `<img data-date="${date}" src="" alt="Day photo" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;margin-bottom:12px">`
+                // Photo — 4:3 framed, tappable (src filled async below)
+                const photoHtml = this.hasPhoto(date)
+                    ? `<div style="margin-bottom:14px"><img data-date="${date}" src="" alt="Day photo" class="detail-photo" onclick="app._openPhotoLightbox(this.src)"></div>`
                     : '';
 
-                // Backfill invite / fill-in buttons
-                let fillHtml = '';
-                if (isPast && !hasAny) {
-                    fillHtml = `<div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-muted);text-align:center;padding:4px 0 8px">No entry for this day — fill it in?</div>
-                        <button class="save-btn" style="margin-top:0" onclick="app.openJournal('morning','${date}')">Fill in Morning</button>
-                        <button class="save-btn" style="margin-top:8px;background:transparent;color:var(--accent);box-shadow:none;border:1.5px solid var(--accent-border)" onclick="app.openJournal('evening','${date}')">Fill in Evening</button>`;
-                } else if (isPast && !eveningDone) {
-                    fillHtml = `<button class="save-btn" style="margin-top:8px" onclick="app.openJournal('evening','${date}')">Add Evening entry</button>`;
-                } else if (isPast && !morningDone) {
-                    fillHtml = `<button class="save-btn" style="margin-top:8px" onclick="app.openJournal('morning','${date}')">Add Morning entry</button>`;
-                }
+                // Build one collapsible section per journal slot
+                const mkSection = (icon, label, type) => {
+                    const sdata   = type === 'daytime' ? (dayData.daytime || {}) : (dayData[type] || {});
+                    const hasData = type === 'daytime' ? !!(sdata.mood || sdata.note) : Object.keys(sdata).length > 0;
+                    const btn     = `<button class="cust-action-btn" onclick="app.openJournal('${type}','${date}')">${hasData ? 'Edit' : 'Fill in'}</button>`;
+
+                    let body = '';
+                    if (type === 'daytime') {
+                        if (sdata.mood) body += `<div style="font-size:26px;margin-bottom:6px">${sdata.mood}</div>`;
+                        if (sdata.note) body += `<div class="diary-readonly-field"><div class="diary-readonly-label">Note</div><div class="diary-readonly-value">${this._esc(sdata.note)}</div></div>`;
+                        const dtHabits = habits.filter(h => h.slots.includes('daytime') && h.days.includes(dow));
+                        if (dtHabits.length) {
+                            const habitsData = dayData.habits || {};
+                            body += `<div class="diary-readonly-field"><div class="diary-readonly-label">Habits</div>` +
+                                dtHabits.map(h => {
+                                    const done = habitsData[h.id] || false;
+                                    return `<div class="hist-habit-row"><span style="color:${done?'var(--accent)':'var(--body-muted)'}">${done?'✓':'○'}</span><span style="color:${done?'var(--body-text)':'var(--body-muted)'}">${h.icon} ${h.name}</span></div>`;
+                                }).join('') + `</div>`;
+                        }
+                    } else {
+                        (config[type] || []).forEach(w => {
+                            const rendered = this._renderWidgetRO(w, sdata, dayData, habits, dow, type);
+                            if (rendered) body += rendered;
+                        });
+                    }
+                    if (!body) body = `<p class="habit-empty" style="padding:2px 0">No entry yet.</p>`;
+
+                    return `<div style="margin-bottom:14px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                            <span style="font-family:'Baloo 2',sans-serif;font-size:14px;font-weight:600;color:var(--accent)">${icon} ${label}</span>
+                            ${btn}
+                        </div>
+                        ${body}
+                    </div>`;
+                };
 
                 container.innerHTML = `<div class="day-detail-card">
-                    <div style="font-family:'Baloo 2',sans-serif;font-size:15px;font-weight:600;color:var(--heading-primary);margin-bottom:10px">${dateLabel}</div>
-                    ${photoPlaceholder}
-                    <div class="day-detail-chips">${chips}</div>
-                    ${goalHtml}${reflHtml}${habitsHtml}
-                    ${fillHtml}
+                    <div style="font-family:'Baloo 2',sans-serif;font-size:15px;font-weight:600;color:var(--heading-primary);margin-bottom:12px">${dateLabel}</div>
+                    ${photoHtml}
+                    ${mkSection('🌅','Morning','morning')}
+                    ${mkSection('☀️','Daytime','daytime')}
+                    ${mkSection('🌙','Evening','evening')}
                 </div>`;
 
                 if (this.hasPhoto(date)) {
@@ -3819,6 +3828,87 @@
                         if (img && url) img.src = url;
                     });
                 }
+            },
+
+            // Render a single widget's saved value as a compact read-only block
+            _renderWidgetRO(w, sdata, dayData, habits, dow, journalType) {
+                const val = sdata[w.id];
+                switch (w.type) {
+                    case 'text':
+                    case 'maingoal':
+                        if (!val) return '';
+                        return `<div class="diary-readonly-field">
+                            <div class="diary-readonly-label">${w.title}</div>
+                            <div class="diary-readonly-value">${this._esc(String(val))}</div>
+                        </div>`;
+                    case 'sleep':
+                        if (!val || (!val.quality && !val.hours)) return '';
+                        return `<div class="diary-readonly-field">
+                            <div class="diary-readonly-label">${w.title}</div>
+                            <div class="diary-readonly-value">${[val.quality ? 'Quality ' + val.quality : '', val.hours ? val.hours + ' hrs' : ''].filter(Boolean).join(' · ')}</div>
+                        </div>`;
+                    case 'scale':
+                        if (!val) return '';
+                        return `<div class="diary-readonly-field">
+                            <div class="diary-readonly-label">${w.title}</div>
+                            <div class="diary-readonly-value">${val}${w.config.scaleMax ? ' / ' + w.config.scaleMax : ''}</div>
+                        </div>`;
+                    case 'number':
+                        if (val === '' || val == null) return '';
+                        return `<div class="diary-readonly-field">
+                            <div class="diary-readonly-label">${w.title}</div>
+                            <div class="diary-readonly-value">${val}</div>
+                        </div>`;
+                    case 'emoji':
+                        if (!val) return '';
+                        return `<div class="diary-readonly-field">
+                            <div class="diary-readonly-label">${w.title}</div>
+                            <div class="diary-readonly-value" style="font-size:24px">${val}</div>
+                        </div>`;
+                    case 'habits': {
+                        const scheduled = habits.filter(h => h.slots.includes(journalType) && h.days.includes(dow));
+                        if (!scheduled.length) return '';
+                        const habitsData = dayData.habits || {};
+                        return `<div class="diary-readonly-field">
+                            <div class="diary-readonly-label">${w.title}</div>
+                            ${scheduled.map(h => {
+                                const done = habitsData[h.id] || false;
+                                return `<div class="hist-habit-row"><span style="color:${done?'var(--accent)':'var(--body-muted)'}">${done?'✓':'○'}</span><span style="color:${done?'var(--body-text)':'var(--body-muted)'}">${h.icon} ${h.name}</span></div>`;
+                            }).join('')}
+                        </div>`;
+                    }
+                    case 'goalreview': {
+                        if (!val || (!val.choice && !val.note)) return '';
+                        const parts = [];
+                        if (val.choice) parts.push('Worked toward it: ' + val.choice);
+                        if (val.note)   parts.push(this._esc(val.note));
+                        return `<div class="diary-readonly-field">
+                            <div class="diary-readonly-label">${w.title}</div>
+                            <div class="diary-readonly-value">${parts.join('<br>')}</div>
+                        </div>`;
+                    }
+                    case 'checklist':
+                    case 'schedule':
+                        if (!Array.isArray(val) || !val.length) return '';
+                        return `<div class="diary-readonly-field">
+                            <div class="diary-readonly-label">${w.title}</div>
+                            ${val.map(item => `<div class="hist-habit-row">
+                                <span style="color:${item.done?'var(--accent)':'var(--body-muted)'}">${item.done?'✓':'○'}</span>
+                                ${item.time ? `<span class="time-pill" style="font-size:10px">${this._esc(item.time)}</span>` : ''}
+                                <span style="color:${item.done?'var(--body-muted)':'var(--body-text)'};${item.done?'text-decoration:line-through':''}">${this._esc(item.text)}</span>
+                            </div>`).join('')}
+                        </div>`;
+                    default: return '';
+                }
+            },
+
+            _openPhotoLightbox(src) {
+                if (!src) return;
+                const lb  = document.getElementById('photoLightbox');
+                const img = document.getElementById('lightboxImg');
+                if (!lb || !img) return;
+                img.src = src;
+                lb.style.display = 'flex';
             },
 
             /* ── V1.3 PHASE 4: PHOTO STORE (IndexedDB) ────────── */
