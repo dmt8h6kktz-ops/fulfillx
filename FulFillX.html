@@ -1928,6 +1928,16 @@
               type:'bullseye', config:{}}
         ];
 
+        // Returns the LOCAL calendar date as "YYYY-MM-DD".
+        // Do NOT use toISOString() for date keys — it returns UTC, which rolls over
+        // to the next calendar day in the evening for users west of UTC.
+        function localDateKey(d = new Date()) {
+            const y   = d.getFullYear();
+            const m   = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
         const app = {
             currentJournal: null,
             goalReviewChoice: null,
@@ -2373,7 +2383,7 @@
             },
 
             getTodayKey() {
-                return new Date().toISOString().split('T')[0];
+                return localDateKey();
             },
 
             saveJournal(type) {
@@ -3403,7 +3413,7 @@
                         const dow = d.getDay();
                         if (h.days.includes(dow)) {
                             scheduled++;
-                            const dateKey = d.toISOString().split('T')[0];
+                            const dateKey = localDateKey(d);
                             if (entries[dateKey]?.habits?.[h.id]) done++;
                         }
                     }
@@ -3616,7 +3626,7 @@
                 for (let i = 0; i < 7; i++) {
                     const d = new Date(now);
                     d.setDate(now.getDate() - dow + i);
-                    const dateStr = d.toISOString().split('T')[0];
+                    const dateStr = localDateKey(d);
                     days.push({ date: dateStr, dayNum: d.getDate(), isCurrent: dateStr === today });
                 }
 
