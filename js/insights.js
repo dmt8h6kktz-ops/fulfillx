@@ -164,9 +164,8 @@ Object.assign(app, {
     renderInsights() {
         const el = document.getElementById('insights-content');
         if (!el) return;
-        // Default overview — no drill-down active
         this._insightsDrilldown = null;
-        this._renderInsightsOverview(el);
+        this._renderInsightsOverviewFull(el);
     },
 
     _renderInsightsOverview(el) {
@@ -638,6 +637,80 @@ Object.assign(app, {
             const wrapper = el.querySelector('div > div:last-child') || el;
             el.insertAdjacentHTML('beforeend', `<div class="ins-card" style="margin-top:10px">${card}</div>`);
         }
+    },
+
+    /* ─── PHASE 6: TOOLS INSIGHTS ────────────────────────────── */
+
+    _renderToolsSection(w30) {
+        const toolUsage = JSON.parse(localStorage.getItem('fulfillx.toolUsage') || '{}');
+        const toolEntries = this.getToolEntries();
+
+        const active = w30.tools;
+        if (!active.length) {
+            return `<div class="ins-card"><div class="ins-empty">Open any Toolbox tool to start tracking your reflection cadence here.</div></div>`;
+        }
+
+        // Per-tool rows
+        const rows = active.map(({ t, entryCount, usageCount }) => {
+            const total = entryCount + usageCount;
+            const lastEntry = (toolEntries[t.id] || [])[0];
+            const lastDate  = lastEntry?.date || (toolUsage[t.id] || []).slice(-1)[0] || null;
+            return `<div class="ins-stat-row">
+                <span class="ins-stat-label"><i class="ph ${t.icon}" style="margin-right:4px"></i>${t.name}</span>
+                <span class="ins-stat-val">${entryCount ? entryCount + ' entr' + (entryCount===1?'y':'ies') : usageCount + '×'}${lastDate ? ' · ' + lastDate : ''}</span>
+            </div>`;
+        }).join('');
+
+        // 5 R's craving frequency (neutral counts)
+        let cravingHtml = '';
+        const fiveRsEntries = toolEntries['five_rs'] || [];
+        if (fiveRsEntries.length >= 3) {
+            const freq = {};
+            fiveRsEntries.forEach(e => {
+                const lbl = (e.data?.craving_label || '').trim().toLowerCase();
+                if (lbl) freq[lbl] = (freq[lbl] || 0) + 1;
+            });
+            const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,5);
+            if (sorted.length) {
+                const chips = sorted.map(([label, cnt]) =>
+                    `<span class="diary-chip" style="cursor:default">${label} ×${cnt}</span>`
+                ).join('');
+                cravingHtml = `<div class="ins-section-title" style="margin-top:12px">Cravings worked through</div>
+                    <div class="ins-card"><div class="diary-chip-row" style="margin:0">${chips}</div></div>`;
+            }
+        }
+
+        // Elephant trigger frequency
+        let triggerHtml = '';
+        const elephantEntries = toolEntries['elephant'] || [];
+        if (elephantEntries.length >= 3) {
+            const freq = {};
+            elephantEntries.forEach(e => {
+                const lbl = (e.data?.trigger || '').trim().toLowerCase();
+                if (lbl) freq[lbl] = (freq[lbl] || 0) + 1;
+            });
+            const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,5);
+            if (sorted.length) {
+                const chips = sorted.map(([label, cnt]) =>
+                    `<span class="diary-chip" style="cursor:default">${label} ×${cnt}</span>`
+                ).join('');
+                triggerHtml = `<div class="ins-section-title" style="margin-top:12px">Reactivity triggers noticed</div>
+                    <div class="ins-card"><div class="diary-chip-row" style="margin:0">${chips}</div></div>`;
+            }
+        }
+
+        return `<div class="ins-card">${rows}</div>${cravingHtml}${triggerHtml}`;
+    },
+
+    // Override _renderInsightsOverview to append tools section
+    _renderInsightsOverviewFull(el) {
+        this._renderInsightsOverview(el);
+        const w30 = this._aggregate(30);
+        const toolsHtml = this._renderToolsSection(w30);
+        el.querySelector('div').insertAdjacentHTML('beforeend', `
+            <div class="ins-section-title">Toolbox · last 30 days</div>
+            ${toolsHtml}
+        `);
     },
 
 });
