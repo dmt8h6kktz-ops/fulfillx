@@ -377,15 +377,20 @@ Object.assign(app, {
                 <button class="photo-remove-btn" onclick="app.removePhoto('${date}','${rowId}')">Remove</button>`;
         } else {
             const inputId = rowId.replace('PhotoRow', 'PhotoInput');
+            // Use the hardcoded date (known at render time) so the file is always
+            // stored under the date this row was built for, regardless of _journalDate.
             row.innerHTML = `
                 <input type="file" id="${inputId}" accept="image/*" style="display:none"
-                    onchange="app.setPhoto(app._journalDate||app.getTodayKey(),this,'${rowId}')">
+                    onchange="app.setPhoto('${date}',this,'${rowId}')">
                 <button class="photo-pick-btn" onclick="document.getElementById('${inputId}').click()"><i class="ph ph-camera"></i> Add photo</button>`;
         }
     },
 
     _loadPhotoRow(rowId, date) {
-        if (!this.hasPhoto(date)) return; // index says no photo — skip DB hit
+        // Always reset the row to the empty state first so a stale photo from a
+        // previously-opened journal never leaks into a different date's view.
+        this._renderPhotoRow(rowId, date, null);
+        if (!this.hasPhoto(date)) return;
         this.getPhoto(date).then(dataUrl => {
             if (dataUrl) this._renderPhotoRow(rowId, date, dataUrl);
         });

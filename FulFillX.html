@@ -198,7 +198,8 @@
                 </div>
                 <div id="morningWidgets"></div>
                 <div class="photo-attach-row" id="morningPhotoRow">
-                    <input type="file" id="morningPhotoInput" accept="image/*" style="display:none" onchange="app.setPhoto(app._journalDate||app.getTodayKey(),this,'morningPhotoRow')">
+                    <!-- date is set by _loadPhotoRow/_renderPhotoRow when the journal opens -->
+                    <input type="file" id="morningPhotoInput" accept="image/*" style="display:none" onchange="app.setPhoto(app._journalDate,this,'morningPhotoRow')">
                     <button class="photo-pick-btn" onclick="document.getElementById('morningPhotoInput').click()"><i class="ph ph-camera"></i> Add photo</button>
                 </div>
                 <button class="save-btn" onclick="app.saveJournal('morning')">Save Morning ✓</button>
@@ -232,7 +233,8 @@
                 </div>
                 <div id="eveningWidgets"></div>
                 <div class="photo-attach-row" id="eveningPhotoRow">
-                    <input type="file" id="eveningPhotoInput" accept="image/*" style="display:none" onchange="app.setPhoto(app._journalDate||app.getTodayKey(),this,'eveningPhotoRow')">
+                    <!-- date is set by _loadPhotoRow/_renderPhotoRow when the journal opens -->
+                    <input type="file" id="eveningPhotoInput" accept="image/*" style="display:none" onchange="app.setPhoto(app._journalDate,this,'eveningPhotoRow')">
                     <button class="photo-pick-btn" onclick="document.getElementById('eveningPhotoInput').click()"><i class="ph ph-camera"></i> Add photo</button>
                 </div>
                 <button class="save-btn" onclick="app.saveJournal('evening')">Save Evening ✓</button>
