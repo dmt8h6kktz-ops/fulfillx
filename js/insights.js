@@ -312,4 +312,162 @@ Object.assign(app, {
         </div>`;
     },
 
+    /* ─── DRILL-DOWN ROUTER ───────────────────────────────────── */
+
+    _openInsightDrilldown(id) {
+        const el = document.getElementById('insights-content');
+        if (!el) return;
+        this._insightsDrilldown = id;
+        const w7  = this._aggregate(7);
+        const w30 = this._aggregate(30);
+        const back = `<button class="ins-detail-back" onclick="app.renderInsights()">← Back to Insights</button>`;
+
+        switch (id) {
+            case 'sleep':  el.innerHTML = back + this._drillSleep(w7, w30);  break;
+            case 'energy': el.innerHTML = back + this._drillScale10('energy', 'Energy', 'natural energy', w7, w30); break;
+            case 'effort': el.innerHTML = back + this._drillScale10('effort', 'Effort', 'effort put in', w7, w30); break;
+            case 'mood':   el.innerHTML = back + this._drillMood(w7, w30);   break;
+            case 'habits': el.innerHTML = back + this._drillHabits(w7, w30); break;
+            case 'goal':   el.innerHTML = back + this._drillGoal(w7, w30);   break;
+            default:       el.innerHTML = back + '<div class="ins-empty">Coming soon.</div>';
+        }
+    },
+
+    /* ─── SHARED HELPERS ──────────────────────────────────────── */
+
+    // Tiny sparkline SVG for a series of values in [0, max].
+    _sparkline(series, max, color) {
+        const pts = series.filter(v => v != null);
+        if (pts.length < 2) return '';
+        const W = 260, H = 48;
+        const vals = series.map(v => v ?? null);
+        const step = W / (vals.length - 1);
+        const points = vals.map((v, i) => {
+            if (v == null) return null;
+            return `${Math.round(i * step)},${Math.round(H - (v / max) * H)}`;
+        }).filter(Boolean);
+        if (points.length < 2) return '';
+        return `<div class="ins-chart-wrap">
+            <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="${points.join(' ')}" fill="none" stroke="${color || 'var(--accent)'}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                ${points.map(p => `<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="3" fill="${color || 'var(--accent)'}"/>`).join('')}
+            </svg>
+        </div>`;
+    },
+
+    _fmt(val, suffix) {
+        return val != null ? val + (suffix || '') : '—';
+    },
+
+    /* ─── SLEEP DRILL-DOWN ────────────────────────────────────── */
+    _drillSleep(w7, w30) {
+        const s7  = w7.sleep,  s30 = w30.sleep;
+        const spark = this._sparkline(s7.series.map(d => d.hours), 12, 'var(--accent)');
+        const rows = [
+            ['Avg hours (7 days)',   this._fmt(s7.avgHours,   ' hrs')],
+            ['Avg quality (7 days)', this._fmt(s7.avgQuality, ' / 5')],
+            ['Avg hours (30 days)',  this._fmt(s30.avgHours,  ' hrs')],
+            ['Days logged',          s7.count + ' this week · ' + s30.count + ' this month'],
+        ];
+        const lowData = s7.count < 3;
+        return `<div>
+            <div class="ins-card-heading">Sleep</div>
+            ${lowData ? `<div class="ins-empty">Log sleep quality in the Morning journal for a few days to see trends.</div>` : ''}
+            ${spark ? `<div class="ins-card">${spark}<div style="font-family:'Fredoka',sans-serif;font-size:11px;color:var(--body-muted);margin-top:4px">Hours slept · this week (oldest → newest)</div></div>` : ''}
+            <div class="ins-card">
+                ${rows.map(([l,v]) => `<div class="ins-stat-row"><span class="ins-stat-label">${l}</span><span class="ins-stat-val">${v}</span></div>`).join('')}
+            </div>
+        </div>`;
+    },
+
+    /* ─── GENERIC SCALE10 DRILL-DOWN (energy / effort) ──────── */
+    _drillScale10(field, title, desc, w7, w30) {
+        const a7  = field === 'energy' ? w7.energy  : w7.effort;
+        const a30 = field === 'energy' ? w30.energy : w30.effort;
+        const spark = this._sparkline(a7.series.map(d => d.val), 10, 'var(--accent)');
+        const lowData = a7.count < 3;
+        return `<div>
+            <div class="ins-card-heading">${title}</div>
+            ${lowData ? `<div class="ins-empty">Log your ${desc} in the Evening journal for a few days to see trends here.</div>` : ''}
+            ${spark ? `<div class="ins-card">${spark}<div style="font-family:'Fredoka',sans-serif;font-size:11px;color:var(--body-muted);margin-top:4px">${title} /10 · this week</div></div>` : ''}
+            <div class="ins-card">
+                <div class="ins-stat-row"><span class="ins-stat-label">Avg this week</span><span class="ins-stat-val">${this._fmt(a7.avg, ' / 10')}</span></div>
+                <div class="ins-stat-row"><span class="ins-stat-label">Avg this month</span><span class="ins-stat-val">${this._fmt(a30.avg, ' / 10')}</span></div>
+                <div class="ins-stat-row"><span class="ins-stat-label">Days logged</span><span class="ins-stat-val">${a7.count} this week · ${a30.count} this month</span></div>
+            </div>
+        </div>`;
+    },
+
+    /* ─── MOOD / EMOTIONS DRILL-DOWN ─────────────────────────── */
+    _drillMood(w7, w30) {
+        const e7  = w7.emotions;
+        const e30 = w30.emotions;
+        const lowData = e7.daysWithEmotions < 3;
+
+        // Frequency rows for this week
+        const freqRows7  = e7.sorted.slice(0, 10).map(([tag, cnt]) =>
+            `<div class="ins-stat-row"><span class="ins-stat-label">${tag}</span><span class="ins-stat-val">×${cnt}</span></div>`
+        ).join('');
+
+        // Top emotions last 30 days
+        const top30 = e30.sorted.slice(0, 5).map(([tag, cnt]) => `${tag} ×${cnt}`).join(' · ');
+
+        // Balance note (neutral, observational)
+        const balanceNote = (() => {
+            const total = e7.pleasant + e7.difficult;
+            if (total < 4) return '';
+            const pPct = Math.round(e7.pleasant / total * 100);
+            if (pPct >= 65) return `This week you felt a good mix — with more energising feelings in the mix.`;
+            if (pPct <= 35) return `It's been a heavier week for many people. Your feelings are valid — the awareness matters.`;
+            return `A balanced mix of feelings this week — highs and lows are both part of it.`;
+        })();
+
+        return `<div>
+            <div class="ins-card-heading">Feelings this week</div>
+            ${lowData ? `<div class="ins-empty">Log emotions in the Evening journal for a few days to see your patterns here.</div>` : ''}
+            ${balanceNote ? `<div class="ins-callout" style="margin-bottom:10px">${balanceNote}</div>` : ''}
+            ${!lowData && freqRows7 ? `<div class="ins-card"><div class="ins-card-heading" style="font-size:13px;margin-bottom:8px">This week</div>${freqRows7}</div>` : ''}
+            ${top30 ? `<div class="ins-card"><div class="ins-card-heading" style="font-size:13px;margin-bottom:4px">Top feelings · last 30 days</div><div style="font-family:'Fredoka',sans-serif;font-size:13px;color:var(--body-text);line-height:1.8">${top30}</div></div>` : ''}
+        </div>`;
+    },
+
+    /* ─── HABITS DRILL-DOWN ───────────────────────────────────── */
+    _drillHabits(w7, w30) {
+        const h7 = w7.habits, h30 = w30.habits;
+        const perHabitRows = h7.perHabit.map(({h, done, sched, pct, streak}) =>
+            `<div class="ins-stat-row">
+                <span class="ins-stat-label">${h.icon} ${h.name}</span>
+                <span class="ins-stat-val">${done}/${sched}${streak > 1 ? ' · ' + streak + '🔥' : ''}</span>
+            </div>`
+        ).join('');
+
+        return `<div>
+            <div class="ins-card-heading">Habits</div>
+            <div class="ins-card">
+                <div class="ins-stat-row"><span class="ins-stat-label">Completion this week</span><span class="ins-stat-val">${this._fmt(h7.pct, '%')}</span></div>
+                <div class="ins-stat-row"><span class="ins-stat-label">Completion this month</span><span class="ins-stat-val">${this._fmt(h30.pct, '%')}</span></div>
+            </div>
+            ${perHabitRows ? `<div class="ins-card">${perHabitRows}</div>` : '<div class="ins-empty">No habits with data yet.</div>'}
+            ${this._habitBarChart(w7)}
+        </div>`;
+    },
+
+    /* ─── GOAL DRILL-DOWN ─────────────────────────────────────── */
+    _drillGoal(w7, w30) {
+        const g7  = w7.goal,  g30 = w30.goal;
+        const lowData = g7.set < 3;
+        const followPct7 = g7.set ? Math.round((g7.yes + g7.partly * 0.5) / g7.set * 100) : null;
+
+        return `<div>
+            <div class="ins-card-heading">Goal follow-through</div>
+            ${lowData ? `<div class="ins-empty">Set a morning goal for a few days to track your follow-through here.</div>` : ''}
+            <div class="ins-card">
+                <div class="ins-stat-row"><span class="ins-stat-label">Goals set this week</span><span class="ins-stat-val">${g7.set}/7 days</span></div>
+                ${followPct7 != null ? `<div class="ins-stat-row"><span class="ins-stat-label">Follow-through rate</span><span class="ins-stat-val">${followPct7}%</span></div>` : ''}
+                <div class="ins-stat-row"><span class="ins-stat-label">Yes / Partly / No</span><span class="ins-stat-val">${g7.yes} · ${g7.partly} · ${g7.no}</span></div>
+                <div class="ins-stat-row"><span class="ins-stat-label">Goals set this month</span><span class="ins-stat-val">${g30.set} days</span></div>
+            </div>
+        </div>`;
+    },
+
 });
