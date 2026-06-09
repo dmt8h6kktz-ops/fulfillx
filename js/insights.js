@@ -162,92 +162,154 @@ Object.assign(app, {
     },
 
     renderInsights() {
-        const today = this.getTodayKey();
-        const entries = this.getEntries();
-        const todayData = entries[today] || {};
+        const el = document.getElementById('insights-content');
+        if (!el) return;
+        // Default overview — no drill-down active
+        this._insightsDrilldown = null;
+        this._renderInsightsOverview(el);
+    },
 
-        let completed = 0;
-        if (todayData.morning && Object.keys(todayData.morning).length > 0) completed++;
-        if (todayData.daytime) completed++;
-        if (todayData.evening && Object.keys(todayData.evening).length > 0) completed++;
+    _renderInsightsOverview(el) {
+        const w7  = this._aggregate(7);
+        const w30 = this._aggregate(30);
+        const MIN_DAYS = 4; // minimum logged days before showing tiles
 
-        const totalDays = Object.keys(entries).length;
-        const sleepHours = todayData.morning?.sleep?.hours;
+        // Compute mood label (top 2 emotions this week, neutral)
+        const moodLabel = (() => {
+            const top = w7.emotions.sorted.slice(0, 2);
+            return top.length ? top.map(([tag]) => tag).join(' · ') : null;
+        })();
 
-        // Habit consistency: scheduled instances vs completed over last 7 days
-        const habits = this.getHabits().filter(h => h.active);
-        let schedInstances = 0, doneInstances = 0;
-        const habitConsistency = habits.map(h => {
-            let scheduled = 0, done = 0;
-            for (let i = 0; i < 7; i++) {
-                const d = new Date(); d.setDate(d.getDate() - i);
-                const dow = d.getDay();
-                if (h.days.includes(dow)) {
-                    scheduled++;
-                    const dateKey = localDateKey(d);
-                    if (entries[dateKey]?.habits?.[h.id]) done++;
-                }
-            }
-            schedInstances += scheduled;
-            doneInstances += done;
-            return { h, scheduled, done };
-        }).filter(x => x.scheduled > 0);
+        // Goal stat: x days out of logged days with goal set
+        const goalLabel = w7.goal.set > 0 ? `${w7.goal.set}/7` : null;
 
-        const consistencyPct = schedInstances > 0 ? Math.round((doneInstances / schedInstances) * 100) : null;
+        const lowData = w7.journaling.daysLogged < MIN_DAYS;
 
-        const habitRows = habitConsistency.length ? habitConsistency.map(({h, scheduled, done}) =>
-            `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border-card)">
-                <span style="font-family:'Fredoka',sans-serif;font-size:14px;color:var(--body-text)">${h.icon} ${h.name}</span>
-                <span style="font-family:'Baloo 2',sans-serif;font-size:13px;font-weight:600;color:var(--accent)">${done}/${scheduled}</span>
-            </div>`
-        ).join('') : `<p class="habit-empty">No scheduled habits yet — add some in the Habits tab.</p>`;
-
-        // Toolbox readout
-        const toolEntries = this.getToolEntries();
-        const toolUsage   = JSON.parse(localStorage.getItem('fulfillx.toolUsage') || '{}');
-        const toolRows = TOOL_REGISTRY.map(t => {
-            const entryCount = (toolEntries[t.id] || []).length;
-            const usageDates = toolUsage[t.id] || [];
-            const lastUsed = entryCount > 0
-                ? (toolEntries[t.id][0].date)
-                : (usageDates.length > 0 ? usageDates[usageDates.length - 1] : null);
-            if (!entryCount && !usageDates.length) return null;
-            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border-card)">
-                <span style="font-family:'Fredoka',sans-serif;font-size:14px;color:var(--body-text)">${t.icon} ${t.name}</span>
-                <span style="font-family:'Baloo 2',sans-serif;font-size:12px;font-weight:600;color:var(--accent)">${entryCount ? entryCount + ' entr' + (entryCount === 1 ? 'y' : 'ies') : 'used ' + usageDates.length + '×'}${lastUsed ? ' · ' + lastUsed : ''}</span>
+        // Build tiles
+        const tile = (id, value, label, trend) => `
+            <div class="ins-tile" onclick="app._openInsightDrilldown('${id}')">
+                <div class="ins-tile-caret">›</div>
+                <div class="ins-tile-value">${value}</div>
+                <div class="ins-tile-label">${label}</div>
+                ${trend ? `<div class="ins-tile-trend">${trend}</div>` : ''}
             </div>`;
-        }).filter(Boolean).join('');
 
-        document.getElementById('insights-content').innerHTML = `
-            <div style="padding-bottom: 20px;">
-                <div class="insight-stat">
-                    <div class="insight-stat-label">Today's Journals</div>
-                    <div class="insight-stat-value">${completed}/3</div>
-                    <div class="insight-stat-desc">${completed === 3 ? 'Complete! Amazing work 🎉' : 'Keep building your ritual'}</div>
-                </div>
-                ${sleepHours ? `
-                <div class="insight-stat">
-                    <div class="insight-stat-label">Sleep Last Night</div>
-                    <div class="insight-stat-value">${sleepHours} hrs</div>
-                    <div class="insight-stat-desc">Quality sleep impacts everything</div>
-                </div>` : ''}
-                <div class="insight-stat">
-                    <div class="insight-stat-label">Days Journaled</div>
-                    <div class="insight-stat-value">${totalDays}</div>
-                    <div class="insight-stat-desc">Total days you've shown up</div>
-                </div>
-                <div class="insight-stat">
-                    <div class="insight-stat-label">Habit consistency · 7 days</div>
-                    <div class="insight-stat-value">${consistencyPct !== null ? consistencyPct + '%' : '—'}</div>
-                    <div class="insight-stat-desc" style="margin-bottom:10px">${consistencyPct !== null ? 'of scheduled habit instances completed' : 'Start tracking to see consistency'}</div>
-                    ${habitRows}
-                </div>
-                <div class="insight-stat">
-                    <div class="insight-stat-label">Toolbox</div>
-                    ${toolRows || `<p class="habit-empty">No tools used yet — try one from the Toolbox tab.</p>`}
-                </div>
+        const tilesHtml = lowData ? `
+            <div class="ins-card" style="margin-bottom:10px">
+                <div class="ins-empty" style="padding:6px 0">Your weekly picture fills in as you log — keep going 🌱<br><span style="font-size:12px">${w7.journaling.daysLogged} of 7 days so far</span></div>
+            </div>` : `
+            <div class="ins-tiles-grid">
+                ${tile('sleep',  w7.sleep.avgHours != null ? w7.sleep.avgHours + ' hrs' : '—', 'Sleep avg')}
+                ${tile('energy', w7.energy.avg != null ? w7.energy.avg + '/10' : '—', 'Energy avg')}
+                ${tile('effort', w7.effort.avg != null ? w7.effort.avg + '/10' : '—', 'Effort avg')}
+                ${tile('mood',   moodLabel || '—', 'Top feelings')}
+                ${tile('habits', w7.habits.pct != null ? w7.habits.pct + '%' : '—', 'Habit rate')}
+                ${tile('goal',   goalLabel || '—', 'Goal days')}
             </div>
-        `;
+            <div class="ins-hint">Tap any stat for the full breakdown</div>`;
+
+        // Callout cards
+        const callouts = this._buildCallouts(w7, w30);
+        const calloutHtml = callouts.length ? callouts.map(c => `<div class="ins-callout">${c}</div>`).join('') : '';
+
+        // Habit chart (inline bar chart)
+        const habitChartHtml = this._habitBarChart(w7);
+
+        // Journaling streak line
+        const streakHtml = `<div class="ins-stat-row">
+            <span class="ins-stat-label">Days journaled</span>
+            <span class="ins-stat-val">${w7.journaling.daysLogged}/7 this week · ${w7.journaling.streak} day streak</span>
+        </div>
+        <div class="ins-stat-row">
+            <span class="ins-stat-label">Total days logged</span>
+            <span class="ins-stat-val">${Object.keys(this.getEntries()).length}</span>
+        </div>`;
+
+        el.innerHTML = `<div style="padding-bottom:20px">
+            <div class="ins-section-title">This week</div>
+            ${tilesHtml}
+            ${calloutHtml || callouts.length === 0 ? '' : ''}
+            ${calloutHtml ? `<div class="ins-card" style="margin-bottom:10px">${calloutHtml}</div>` : ''}
+            <div class="ins-section-title">Habits this week</div>
+            ${habitChartHtml}
+            <div class="ins-section-title">Journal streak</div>
+            <div class="ins-card">${streakHtml}</div>
+        </div>`;
+    },
+
+    // Rule-based callouts — max 3, most notable first.
+    _buildCallouts(w7, w30) {
+        const out = [];
+        const MIN = 4;
+        if (w7.journaling.daysLogged < MIN) return out;
+
+        // Sleep vs energy observation
+        if (w7.sleep.count >= 3 && w7.energy.count >= 3) {
+            const goodSleepDays   = w7.sleep.series.filter(d => d.hours >= 7);
+            const poorSleepDays   = w7.sleep.series.filter(d => d.hours && d.hours < 6.5);
+            const entries = this.getEntries();
+            if (goodSleepDays.length >= 2 && w7.energy.avg) {
+                out.push(`On days after 7+ hrs of sleep, your energy tends to stay higher — nice pattern this week.`);
+            } else if (poorSleepDays.length >= 2) {
+                out.push(`A couple of shorter nights this week. Protecting your sleep often shows up in energy the next day.`);
+            }
+        }
+
+        // Habit momentum
+        if (w7.habits.pct != null) {
+            if (w7.habits.pct >= 80) out.push(`Strong habit week — ${w7.habits.pct}% of scheduled habits done. That consistency adds up.`);
+            else if (w7.habits.pct >= 50) out.push(`You completed ${w7.habits.pct}% of your scheduled habits this week. Every one counts.`);
+        }
+
+        // Emotion presence
+        if (w7.emotions.daysWithEmotions >= 3) {
+            const top = w7.emotions.sorted[0];
+            if (top) out.push(`"${top[0]}" showed up most this week (${top[1]}×). Noticing your feelings is its own kind of awareness.`);
+        }
+
+        // Goal follow-through
+        if (w7.goal.set >= 3) {
+            const followPct = Math.round((w7.goal.yes + w7.goal.partly * 0.5) / w7.goal.set * 100);
+            if (followPct >= 70) out.push(`You moved toward your goals on most days you set one — great follow-through.`);
+        }
+
+        return out.slice(0, 3);
+    },
+
+    // Lightweight inline SVG habit bar chart for the week.
+    _habitBarChart(w7) {
+        if (!w7.habits.perHabit.length) return `<div class="ins-card"><div class="ins-empty">Add habits in the Habits tab to see your weekly chart here.</div></div>`;
+
+        const days  = w7.dates.slice().reverse(); // oldest first
+        const DAY   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+        const entries = this.getEntries();
+        const habits  = this.getHabits().filter(h => h.active);
+
+        // Bar heights: completion rate per day (0-1)
+        const bars = days.map(date => {
+            const dow = new Date(date + 'T00:00:00').getDay();
+            const sched = habits.filter(h => h.days.includes(dow));
+            if (!sched.length) return { label: DAY[dow], rate: null };
+            const done = sched.filter(h => entries[date]?.habits?.[h.id]).length;
+            return { label: DAY[dow], rate: done / sched.length };
+        });
+
+        const W = 280, H = 60, barW = Math.floor(W / bars.length) - 4;
+        const svgBars = bars.map((b, i) => {
+            const x = i * (W / bars.length) + 2;
+            if (b.rate == null) return `<text x="${x + barW/2}" y="${H}" text-anchor="middle" font-family="Fredoka,sans-serif" font-size="9" fill="var(--body-muted)">${b.label}</text>`;
+            const bh = Math.max(4, Math.round(b.rate * (H - 16)));
+            const fill = b.rate >= 0.8 ? 'var(--accent)' : b.rate >= 0.4 ? 'var(--accent-border)' : 'var(--border-card)';
+            return `<rect x="${x}" y="${H - 12 - bh}" width="${barW}" height="${bh}" rx="3" fill="${fill}"/>
+                    <text x="${x + barW/2}" y="${H}" text-anchor="middle" font-family="Fredoka,sans-serif" font-size="9" fill="var(--body-muted)">${b.label}</text>`;
+        }).join('');
+
+        return `<div class="ins-card">
+            <div class="ins-chart-wrap">
+                <svg viewBox="0 0 ${W} ${H + 2}" xmlns="http://www.w3.org/2000/svg">${svgBars}</svg>
+            </div>
+            <div style="font-family:'Fredoka',sans-serif;font-size:11px;color:var(--body-muted);margin-top:4px">Daily habit completion · this week</div>
+        </div>`;
     },
 
 });
