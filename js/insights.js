@@ -273,6 +273,18 @@ Object.assign(app, {
             if (followPct >= 70) out.push(`You moved toward your goals on most days you set one — great follow-through.`);
         }
 
+        // Day-of-week pattern (needs 30 days of data, shown in callout)
+        if (out.length < 3) {
+            const entries = this.getEntries();
+            const habits  = this.getHabits();
+            const patterns = this._dowPatterns(entries, habits);
+            const withData = patterns.filter(p => p.avgHabitRate != null && p.n >= 2);
+            if (withData.length >= 4) {
+                const best = withData.reduce((a,b) => a.avgHabitRate > b.avgHabitRate ? a : b);
+                if (best.avgHabitRate >= 0.6) out.push(`Your habits tend to land best on <strong>${best.day}s</strong> — nice consistency there.`);
+            }
+        }
+
         return out.slice(0, 3);
     },
 
@@ -322,13 +334,18 @@ Object.assign(app, {
         const w30 = this._aggregate(30);
         const back = `<button class="ins-detail-back" onclick="app.renderInsights()">← Back to Insights</button>`;
 
+        const entries30 = this.getEntries();
+        const habits30  = this.getHabits();
+        const patternsCard = this._patternsCard(entries30, habits30);
+        const pHtml = patternsCard ? `<div class="ins-card" style="margin-top:10px">${patternsCard}</div>` : '';
+
         switch (id) {
-            case 'sleep':  el.innerHTML = back + this._drillSleep(w7, w30);  break;
-            case 'energy': el.innerHTML = back + this._drillScale10('energy', 'Energy', 'natural energy', w7, w30); break;
-            case 'effort': el.innerHTML = back + this._drillScale10('effort', 'Effort', 'effort put in', w7, w30); break;
-            case 'mood':   el.innerHTML = back + this._drillMood(w7, w30);   break;
-            case 'habits': el.innerHTML = back + this._drillHabits(w7, w30); break;
-            case 'goal':   el.innerHTML = back + this._drillGoal(w7, w30);   break;
+            case 'sleep':  el.innerHTML = back + this._drillSleep(w7, w30) + pHtml;  break;
+            case 'energy': el.innerHTML = back + this._drillScale10('energy', 'Energy', 'natural energy', w7, w30) + pHtml; break;
+            case 'effort': el.innerHTML = back + this._drillScale10('effort', 'Effort', 'effort put in', w7, w30) + pHtml; break;
+            case 'mood':   el.innerHTML = back + this._drillMood(w7, w30) + pHtml;   break;
+            case 'habits': el.innerHTML = back + this._drillHabits(w7, w30) + pHtml; break;
+            case 'goal':   el.innerHTML = back + this._drillGoal(w7, w30) + pHtml;   break;
             default:       el.innerHTML = back + '<div class="ins-empty">Coming soon.</div>';
         }
     },
@@ -468,6 +485,159 @@ Object.assign(app, {
                 <div class="ins-stat-row"><span class="ins-stat-label">Goals set this month</span><span class="ins-stat-val">${g30.set} days</span></div>
             </div>
         </div>`;
+    },
+
+    /* ─── PHASE 5: PATTERNS & CORRELATIONS ───────────────────── */
+
+    // Day-of-week averages for energy, habit rate, and emotion balance
+    // over a longer window (last 30 days). Returns array indexed 0=Sun…6=Sat.
+    _dowPatterns(entries, habits) {
+        const DAY = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const acc = Array.from({length:7}, () => ({ energy:[], habitRate:[], emoBalance:[] }));
+        const now = new Date();
+        for (let i = 0; i < 30; i++) {
+            const d = new Date(now); d.setDate(now.getDate() - i);
+            const date = localDateKey(d);
+            const dow  = d.getDay();
+            const ev   = entries[date]?.evening || {};
+            if (ev.energy != null) acc[dow].energy.push(ev.energy);
+            const active = habits.filter(h => h.active && h.days.includes(dow));
+            if (active.length) {
+                const done = active.filter(h => entries[date]?.habits?.[h.id]).length;
+                acc[dow].habitRate.push(done / active.length);
+            }
+            const ems = ev.emotions;
+            if (Array.isArray(ems) && ems.length) {
+                const p = ems.filter(t => PLEASANT_EMOTIONS.has(t)).length;
+                acc[dow].emoBalance.push(p / ems.length);
+            }
+        }
+        return acc.map((a, i) => ({
+            day: DAY[i], short: ['Su','Mo','Tu','We','Th','Fr','Sa'][i],
+            avgEnergy:   this._avg(a.energy),
+            avgHabitRate: this._avg(a.habitRate),
+            avgEmoBalance: this._avg(a.emoBalance),
+            n: Math.max(a.energy.length, a.habitRate.length, a.emoBalance.length)
+        }));
+    },
+
+    // Returns an array of observational correlation strings (guarded by data threshold).
+    _buildCorrelations(entries, habits) {
+        const THRESHOLD = 10; // days of paired data needed
+        const obs = [];
+        const now = new Date();
+        const pairs = { sleepEnergy:[], effortEnergy:[], sleepHabits:[], goalHabits:[], sleepEmo:[], habitEmo:[] };
+
+        for (let i = 0; i < 60; i++) {
+            const d = new Date(now); d.setDate(now.getDate() - i);
+            const date = localDateKey(d);
+            const e    = entries[date] || {};
+            const ev   = e.evening || {};
+            const am   = e.morning || {};
+            const sleep = am.sleep;
+
+            const sleepHrs   = sleep?.hours ? parseFloat(sleep.hours) : null;
+            const sleepQ     = sleep?.quality ? parseInt(sleep.quality) : null;
+            const energy     = ev.energy ?? null;
+            const effort     = ev.effort ?? null;
+            const habitsDone = habits.filter(h => h.active && h.days.includes(d.getDay()) && e.habits?.[h.id]).length;
+            const habitsSched= habits.filter(h => h.active && h.days.includes(d.getDay())).length;
+            const habitRate  = habitsSched ? habitsDone / habitsSched : null;
+            const goalSet    = !!(e.evening?.goalreview?.choice);
+            const emoBalance = (() => {
+                const ems = ev.emotions;
+                if (!Array.isArray(ems) || !ems.length) return null;
+                return ems.filter(t => PLEASANT_EMOTIONS.has(t)).length / ems.length;
+            })();
+
+            if (sleepHrs != null && energy != null) pairs.sleepEnergy.push([sleepHrs, energy]);
+            if (effort != null && energy != null)    pairs.effortEnergy.push([effort, energy]);
+            if (sleepHrs != null && habitRate != null) pairs.sleepHabits.push([sleepHrs, habitRate]);
+            if (goalSet && habitRate != null)          pairs.goalHabits.push([habitRate]);
+            if (sleepHrs != null && emoBalance != null) pairs.sleepEmo.push([sleepHrs, emoBalance]);
+            if (habitRate != null && emoBalance != null) pairs.habitEmo.push([habitRate, emoBalance]);
+        }
+
+        // sleep ↔ energy
+        if (pairs.sleepEnergy.length >= THRESHOLD) {
+            const goodSleep = pairs.sleepEnergy.filter(p => p[0] >= 7).map(p => p[1]);
+            const poorSleep = pairs.sleepEnergy.filter(p => p[0] < 6.5).map(p => p[1]);
+            const gAvg = this._avg(goodSleep), pAvg = this._avg(poorSleep);
+            if (gAvg != null && pAvg != null && gAvg - pAvg >= 1.5) {
+                obs.push(`On days after 7+ hrs of sleep, your energy tended to be around ${gAvg}/10 — compared to ${pAvg}/10 after shorter nights.`);
+            }
+        }
+
+        // effort ↔ energy
+        if (pairs.effortEnergy.length >= THRESHOLD) {
+            const highEff = pairs.effortEnergy.filter(p => p[0] >= 7).map(p => p[1]);
+            const lowEff  = pairs.effortEnergy.filter(p => p[0] <= 4).map(p => p[1]);
+            const hAvg = this._avg(highEff), lAvg = this._avg(lowEff);
+            if (hAvg != null && lAvg != null && Math.abs(hAvg - lAvg) >= 1.5) {
+                obs.push(`High-effort days and high-energy days tended to go together — you seemed energised by doing.`);
+            }
+        }
+
+        // sleep ↔ habits
+        if (pairs.sleepHabits.length >= THRESHOLD) {
+            const goodSleep = pairs.sleepHabits.filter(p => p[0] >= 7).map(p => p[1]);
+            const poorSleep = pairs.sleepHabits.filter(p => p[0] < 6.5).map(p => p[1]);
+            const gAvg = this._avg(goodSleep), pAvg = this._avg(poorSleep);
+            if (gAvg != null && pAvg != null && gAvg - pAvg >= 0.2) {
+                obs.push(`On better-sleep nights, your habit completion tended to be a bit higher the next day.`);
+            }
+        }
+
+        // habits ↔ emotions
+        if (pairs.habitEmo.length >= THRESHOLD) {
+            const highHabit = pairs.habitEmo.filter(p => p[0] >= 0.7).map(p => p[1]);
+            const lowHabit  = pairs.habitEmo.filter(p => p[0] <= 0.3).map(p => p[1]);
+            const hAvg = this._avg(highHabit), lAvg = this._avg(lowHabit);
+            if (hAvg != null && lAvg != null && hAvg - lAvg >= 0.15) {
+                obs.push(`You tended to log more energising feelings on days when more habits were done.`);
+            }
+        }
+
+        return obs;
+    },
+
+    // Adds patterns card to each drill-down (called from the tile helpers above).
+    _patternsCard(entries, habits) {
+        const patterns = this._dowPatterns(entries, habits);
+        const correls  = this._buildCorrelations(entries, habits);
+
+        // Find strongest and quietest habit-rate day
+        const withData = patterns.filter(p => p.avgHabitRate != null);
+        if (!withData.length && !correls.length) return '';
+
+        let patHtml = '';
+        if (withData.length >= 3) {
+            const best  = withData.reduce((a,b) => a.avgHabitRate > b.avgHabitRate ? a : b);
+            const quiet = withData.reduce((a,b) => a.avgHabitRate < b.avgHabitRate ? a : b);
+            if (best.day !== quiet.day) {
+                patHtml += `<div class="ins-callout">Your habits tend to land best on <strong>${best.day}</strong> — and you get a bit more rest on <strong>${quiet.day}</strong>. Both have their place.</div>`;
+            }
+        }
+
+        const corrHtml = correls.map(c => `<div class="ins-callout">${c}</div>`).join('');
+
+        if (!patHtml && !corrHtml) return '';
+        return `<div class="ins-card-heading">Patterns noticed</div>${patHtml}${corrHtml}`;
+    },
+
+    // Patch the four stat drill-downs to include patterns. Called after the
+    // initial drill-down content is inserted — we append the patterns card.
+    _appendPatternsToActive() {
+        if (!this._insightsDrilldown) return;
+        const el = document.getElementById('insights-content');
+        if (!el) return;
+        const entries = this.getEntries();
+        const habits  = this.getHabits();
+        const card = this._patternsCard(entries, habits);
+        if (card) {
+            const wrapper = el.querySelector('div > div:last-child') || el;
+            el.insertAdjacentHTML('beforeend', `<div class="ins-card" style="margin-top:10px">${card}</div>`);
+        }
     },
 
 });
