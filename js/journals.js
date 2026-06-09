@@ -76,6 +76,23 @@ Object.assign(app, {
                 break;
             }
 
+            case 'scale10': {
+                const btns = Array.from({length: 10}, (_, i) => i + 1).map(n =>
+                    `<button class="scale10-btn" data-val="${n}" onclick="app.selectScale10(this,'w-${w.id}')">${n}</button>`
+                ).join('');
+                box.innerHTML = `${title}${prompt}<div class="scale10-row" id="w-${w.id}">${btns}</div>`;
+                break;
+            }
+
+            case 'emotions': {
+                const tags = w.config.tags || ["Happy","Calm","Grateful","Content","Excited","Motivated","Energized","Proud","Hopeful","Tired","Drained","Lazy","Anxious","Stressed","Frustrated","Sad","Angry","Lonely","Overwhelmed","Numb"];
+                const chips = tags.map(t =>
+                    `<button class="emotion-chip" data-tag="${t}" onclick="app.toggleEmotionChip(this,'w-${w.id}')">${t}</button>`
+                ).join('');
+                box.innerHTML = `${title}${prompt}<div class="emotion-chip-row" id="w-${w.id}">${chips}</div>`;
+                break;
+            }
+
             case 'goalreview':
                 box.innerHTML = `${title}
                     <div class="goal-review-goal" id="w-${w.id}-goaltext"></div>
@@ -118,6 +135,15 @@ Object.assign(app, {
     selectScale(btn, containerId) {
         document.querySelectorAll('#' + containerId + ' .scale-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+    },
+
+    selectScale10(btn, containerId) {
+        document.querySelectorAll('#' + containerId + ' .scale10-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    },
+
+    toggleEmotionChip(btn) {
+        btn.classList.toggle('active');
     },
 
     selectEmoji(btn, containerId) {
@@ -168,6 +194,10 @@ Object.assign(app, {
                 return document.getElementById('w-' + w.id)?.value || '';
             case 'habits':
                 return null; // handled via syncHabit / saveJournal special-case
+            case 'scale10':
+                return parseInt(document.querySelector('#w-' + w.id + ' .scale10-btn.active')?.dataset.val || '0') || null;
+            case 'emotions':
+                return Array.from(document.querySelectorAll('#w-' + w.id + ' .emotion-chip.active')).map(b => b.dataset.tag);
             case 'emoji':
                 return document.querySelector('#w-' + w.id + ' .emoji-btn.active')?.textContent || '';
             case 'goalreview':
@@ -213,6 +243,16 @@ Object.assign(app, {
             case 'habits':
                 // Restored in loadJournalData from entries[date].habits
                 break;
+            case 'scale10':
+                document.querySelectorAll('#w-' + w.id + ' .scale10-btn').forEach(b =>
+                    b.classList.toggle('active', parseInt(b.dataset.val) === value));
+                break;
+            case 'emotions': {
+                const arr = Array.isArray(value) ? value : [];
+                document.querySelectorAll('#w-' + w.id + ' .emotion-chip').forEach(b =>
+                    b.classList.toggle('active', arr.includes(b.dataset.tag)));
+                break;
+            }
             case 'emoji':
                 document.querySelectorAll('#w-' + w.id + ' .emoji-btn').forEach(b =>
                     b.classList.toggle('active', b.textContent === value));
@@ -274,8 +314,9 @@ Object.assign(app, {
             });
             entries[today][type] = data;
         } else if (type === 'daytime') {
+            const prevMood = entries[today]?.daytime?.mood || ''; // preserve past mood data
             entries[today].daytime = {
-                mood: document.querySelector('#daytimeMood .emoji-btn.active')?.dataset.mood || '',
+                mood: prevMood,
                 note: document.getElementById('daytimeNote').value
             };
             // Merge daytime habit checkboxes into shared entries[date].habits
@@ -332,8 +373,6 @@ Object.assign(app, {
         } else if (type === 'daytime') {
             const data = todayData.daytime || {};
             document.getElementById('daytimeNote').value = data.note || '';
-            document.querySelectorAll('#daytimeMood .emoji-btn').forEach(b =>
-                b.classList.toggle('active', b.dataset.mood === data.mood));
             this.renderDaytimeHabits(todayData.habits || {});
         }
     },

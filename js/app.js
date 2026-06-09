@@ -10,7 +10,6 @@ Object.assign(app, {
         this.updateQuote();
         this.renderToolbox();
         this.renderHabits();
-        this.renderEmojiScale();
         this.updateCompletionBadges();
         this.renderInsights();
         this.updateTodoFab();

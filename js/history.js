@@ -274,6 +274,20 @@ Object.assign(app, {
                         <span style="color:${item.done?'var(--body-muted)':'var(--body-text)'};${item.done?'text-decoration:line-through':''}">${this._esc(item.text)}</span>
                     </div>`).join('')}
                 </div>`;
+            case 'scale10':
+                if (!val) return '';
+                return `<div class="diary-readonly-field">
+                    <div class="diary-readonly-label">${w.title}</div>
+                    <div class="diary-readonly-value">${val} / 10</div>
+                </div>`;
+            case 'emotions': {
+                const tags = Array.isArray(val) ? val : [];
+                if (!tags.length) return '';
+                return `<div class="diary-readonly-field">
+                    <div class="diary-readonly-label">${w.title}</div>
+                    <div class="diary-readonly-value">${tags.map(t => this._esc(t)).join(' · ')}</div>
+                </div>`;
+            }
             default: return '';
         }
     },

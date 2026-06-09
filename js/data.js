@@ -21,7 +21,10 @@ const DEFAULT_CONFIG = {
         { id: "goalreview",  type: "goalreview", title: "Today's Main Goal",   config: {} },
         { id: "reflection",  type: "text",      title: "Reflection",           config: { prompt: "What was a win today? What would you do differently?" } },
         { id: "habits-pm",   type: "habits",    title: "Evening Habits",       config: { items: ["Reading","Book Club prep","Meditation"] } },
-        { id: "sleepintent", type: "text",      title: "Sleep Intention",      config: { prompt: "What will help you sleep well tonight?" } }
+        { id: "sleepintent", type: "text",      title: "Sleep Intention",      config: { prompt: "What will help you sleep well tonight?" } },
+        { id: "energy",      type: "scale10",   title: "Energy",               config: { prompt: "How much natural energy did you have today?" } },
+        { id: "effort",      type: "scale10",   title: "Effort",               config: { prompt: "How much did you put in today? Reading, studying, and boxing all count." } },
+        { id: "emotions",    type: "emotions",  title: "How was today?",       config: { prompt: "What did you feel? Tap any that fit.", tags: ["Happy","Calm","Grateful","Content","Excited","Motivated","Energized","Proud","Hopeful","Tired","Drained","Lazy","Anxious","Stressed","Frustrated","Sad","Angry","Lonely","Overwhelmed","Numb"] } }
     ]
 };
 
