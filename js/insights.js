@@ -19,7 +19,10 @@ Object.assign(app, {
 
     // Average of a number array, null if empty.
     _avg(arr) {
-        const valid = arr.filter(v => v != null && !isNaN(v));
+        // Coerce every element to Number first — stored values may be strings
+        // (e.g. from a prior 'scale' widget type). Number("7") = 7; Number(null) = 0
+        // so we also drop anything that isn't finite after coercion.
+        const valid = arr.map(v => Number(v)).filter(v => Number.isFinite(v));
         return valid.length ? Math.round((valid.reduce((a,b) => a+b, 0) / valid.length) * 10) / 10 : null;
     },
 

@@ -194,8 +194,11 @@ Object.assign(app, {
                 return document.getElementById('w-' + w.id)?.value || '';
             case 'habits':
                 return null; // handled via syncHabit / saveJournal special-case
-            case 'scale10':
-                return parseInt(document.querySelector('#w-' + w.id + ' .scale10-btn.active')?.dataset.val || '0') || null;
+            case 'scale10': {
+                const raw = document.querySelector('#w-' + w.id + ' .scale10-btn.active')?.dataset.val;
+                const n   = raw != null ? parseInt(raw, 10) : NaN;
+                return Number.isFinite(n) && n > 0 ? n : null; // always a number, never a string
+            }
             case 'emotions':
                 return Array.from(document.querySelectorAll('#w-' + w.id + ' .emotion-chip.active')).map(b => b.dataset.tag);
             case 'emoji':
@@ -244,8 +247,9 @@ Object.assign(app, {
                 // Restored in loadJournalData from entries[date].habits
                 break;
             case 'scale10':
+                // Compare as numbers — stored value may be a string from an older scale widget
                 document.querySelectorAll('#w-' + w.id + ' .scale10-btn').forEach(b =>
-                    b.classList.toggle('active', parseInt(b.dataset.val) === value));
+                    b.classList.toggle('active', parseInt(b.dataset.val, 10) === Number(value)));
                 break;
             case 'emotions': {
                 const arr = Array.isArray(value) ? value : [];
