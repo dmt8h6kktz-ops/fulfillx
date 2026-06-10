@@ -286,6 +286,99 @@ var app = {
     },
 
 
+    /* ── V1.6 CONFIG MIGRATION (idempotent, safe for existing users) ─ */
+    migrateV16Config() {
+        const raw = localStorage.getItem('fulfillx.config');
+        if (!raw) return; // fresh install — DEFAULT_CONFIG already has everything
+
+        const config = JSON.parse(raw);
+        const evening = config.evening || [];
+        let changed = false;
+
+        // 1. Find and rename any 'Activity' widget → 'Effort', update id + prompt,
+        //    and migrate existing entry data from the old id to 'effort'.
+        const actIdx = evening.findIndex(w =>
+            w.title === 'Activity' ||
+            w.id === 'activity' ||
+            (w.type === 'scale10' && w.title !== 'Energy' && w.id !== 'effort' && w.id !== 'energy')
+        );
+        if (actIdx >= 0) {
+            const w = evening[actIdx];
+            const oldId = w.id;
+            w.id     = 'effort';
+            w.type   = 'scale10';
+            w.title  = 'Effort';
+            if (!w.config) w.config = {};
+            w.config.prompt = "How much did you put in today? Reading, studying, and boxing all count.";
+            // Migrate any saved entry values from oldId → 'effort'
+            if (oldId && oldId !== 'effort') {
+                const entries = this.getEntries();
+                Object.values(entries).forEach(day => {
+                    if (day.evening && oldId in day.evening) {
+                        day.evening.effort = day.evening[oldId];
+                        delete day.evening[oldId];
+                    }
+                });
+                this.saveEntries(entries);
+            }
+            changed = true;
+        }
+
+        // 2. Update Energy prompt if widget exists but has stale prompt.
+        const energyIdx = evening.findIndex(w => w.id === 'energy');
+        if (energyIdx >= 0) {
+            const w = evening[energyIdx];
+            const wantPrompt = "How much natural energy did you have today?";
+            if (!w.config) w.config = {};
+            if (w.config.prompt !== wantPrompt || w.title !== 'Energy' || w.type !== 'scale10') {
+                w.title  = 'Energy';
+                w.type   = 'scale10';
+                w.config.prompt = wantPrompt;
+                changed = true;
+            }
+        } else {
+            // Insert Energy before 'sleepintent' if present, otherwise at end of evening
+            const anchorIdx = evening.findIndex(w => w.id === 'sleepintent');
+            const pos = anchorIdx >= 0 ? anchorIdx : evening.length;
+            evening.splice(pos, 0, {
+                id: 'energy', type: 'scale10', title: 'Energy',
+                config: { prompt: "How much natural energy did you have today?" }
+            });
+            changed = true;
+        }
+
+        // 3. Ensure Effort widget exists (may already have been fixed in step 1).
+        const effortIdx = evening.findIndex(w => w.id === 'effort');
+        if (effortIdx < 0) {
+            const energyFinal = evening.findIndex(w => w.id === 'energy');
+            const pos = energyFinal >= 0 ? energyFinal + 1 : evening.length;
+            evening.splice(pos, 0, {
+                id: 'effort', type: 'scale10', title: 'Effort',
+                config: { prompt: "How much did you put in today? Reading, studying, and boxing all count." }
+            });
+            changed = true;
+        }
+
+        // 4. Add Emotions widget if missing.
+        const emotionsIdx = evening.findIndex(w => w.id === 'emotions' || w.type === 'emotions');
+        if (emotionsIdx < 0) {
+            evening.push({
+                id: 'emotions', type: 'emotions', title: 'How was today?',
+                config: {
+                    prompt: "What did you feel? Tap any that fit.",
+                    tags: ['Happy','Calm','Grateful','Content','Excited','Motivated','Energized','Proud','Hopeful',
+                           'Tired','Drained','Lazy','Anxious','Stressed','Frustrated','Sad','Angry','Lonely','Overwhelmed','Numb']
+                }
+            });
+            changed = true;
+        }
+
+        if (changed) {
+            config.evening = evening;
+            localStorage.setItem('fulfillx.config', JSON.stringify(config));
+        }
+    },
+
     _esc(str) {
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     },

@@ -2,6 +2,7 @@
 
 Object.assign(app, {
     init() {
+        this.migrateV16Config(); // idempotent — safe on every load
         this.getConfig();
         this.getHabits();
         this.initHistory();

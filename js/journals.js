@@ -545,7 +545,7 @@ Object.assign(app, {
 
     onWeTypeChange() {
         const type = document.getElementById('we-type').value;
-        const hasPrompt = ['text','maingoal','scale'].includes(type);
+        const hasPrompt = ['text','maingoal','scale','scale10','emotions'].includes(type);
         const hasItems  = type === 'habits';
         const hasScale  = type === 'scale';
         document.getElementById('we-prompt-row').style.display = hasPrompt ? '' : 'none';
@@ -567,8 +567,9 @@ Object.assign(app, {
         const cfg = {};
         if (prompt) cfg.prompt = prompt;
         if (items.length) cfg.items = items;
-        if (type === 'sleep') { cfg.scaleMax = 5; cfg.numberLabel = 'Hours slept'; }
-        if (type === 'scale') { cfg.scaleMax = parseInt(document.getElementById('we-scalemax')?.value || '5'); }
+        if (type === 'sleep')    { cfg.scaleMax = 5; cfg.numberLabel = 'Hours slept'; }
+        if (type === 'scale')    { cfg.scaleMax = parseInt(document.getElementById('we-scalemax')?.value || '5'); }
+        if (type === 'emotions') { cfg.tags = ['Happy','Calm','Grateful','Content','Excited','Motivated','Energized','Proud','Hopeful','Tired','Drained','Lazy','Anxious','Stressed','Frustrated','Sad','Angry','Lonely','Overwhelmed','Numb']; }
 
         if (editId) {
             const w = config[journal].find(x => x.id === editId);
