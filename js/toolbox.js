@@ -2,31 +2,46 @@
 
 Object.assign(app, {
     renderToolbox() {
-        const groups = [
-            { key:'moment',  label:'In the moment' },
-            { key:'reflect', label:'Reflect & journal' },
-            { key:'know',    label:'Know yourself' }
-        ];
+        const GROUP_LABELS = {
+            moment:  'In the moment',
+            reflect: 'Reflect & journal',
+            know:    'Know yourself'
+        };
+        const cfg    = this.getToolboxConfig() || this.migrateToolboxConfig();
+        const hidden = new Set(cfg.hidden);
+        // Build the ordered, visible list of tools
+        const visible = cfg.order
+            .map(id => TOOL_REGISTRY.find(t => t.id === id))
+            .filter(t => t && !hidden.has(t.id));
+
         const grid = document.getElementById('toolbox-grid');
         let html = '';
-        groups.forEach(g => {
-            const tools = TOOL_REGISTRY.filter(t => t.group === g.key);
-            if (!tools.length) return;
-            html += `<div class="tool-group-heading">${g.label}</div>`;
-            tools.forEach(t => {
-                html += `<div class="tool-list-card" onclick="app.openTool('${t.id}')">
-                    <div class="tool-list-card-row">
-                        <span class="tool-list-icon"><i class="ph ${t.icon}"></i></span>
-                        <div class="tool-list-body">
-                            <div class="tool-list-name">${t.name}</div>
-                            <div class="tool-list-purpose">${t.purpose}</div>
-                            <div class="tool-list-credit">${t.credit}</div>
-                        </div>
-                        <button class="tool-info-btn" onclick="event.stopPropagation();app.openToolInfo('${t.id}')" aria-label="Info">i</button>
+        let lastGroup = null;
+
+        visible.forEach(t => {
+            if (t.group !== lastGroup) {
+                html += `<div class="tool-group-heading">${GROUP_LABELS[t.group] || t.group}</div>`;
+                lastGroup = t.group;
+            }
+            html += `<div class="tool-list-card" onclick="app.openTool('${t.id}')">
+                <div class="tool-list-card-row">
+                    <span class="tool-list-icon"><i class="ph ${t.icon}"></i></span>
+                    <div class="tool-list-body">
+                        <div class="tool-list-name">${t.name}</div>
+                        <div class="tool-list-purpose">${t.purpose}</div>
+                        <div class="tool-list-credit">${t.credit}</div>
                     </div>
-                </div>`;
-            });
+                    <button class="tool-info-btn" onclick="event.stopPropagation();app.openToolInfo('${t.id}')" aria-label="Info">i</button>
+                </div>
+            </div>`;
         });
+
+        if (!visible.length) {
+            html = `<div style="font-family:'Fredoka',sans-serif;font-size:14px;color:var(--body-muted);text-align:center;padding:32px 16px">
+                All tools are hidden. Open <strong>Settings → Customize Toolbox</strong> to show them again.
+            </div>`;
+        }
+
         grid.innerHTML = html;
     },
 
