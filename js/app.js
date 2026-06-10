@@ -2,7 +2,8 @@
 
 Object.assign(app, {
     init() {
-        this.migrateV16Config(); // idempotent — safe on every load
+        this.migrateV16Config();     // idempotent — safe on every load
+        this.migrateToolboxConfig(); // idempotent — seeds order/hidden
         this.getConfig();
         this.getHabits();
         this.initHistory();
@@ -88,6 +89,7 @@ Object.assign(app, {
         document.getElementById('settings').classList.add('active');
         this.updateThemeButtons();
         this.renderCustomizationEditor();
+        this.renderToolboxCustomizer();
     },
 
     closeSettings() {

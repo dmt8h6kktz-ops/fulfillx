@@ -1007,4 +1007,57 @@ Object.assign(app, {
         el.innerHTML = html;
     },
 
+    /* ── CUSTOMIZE TOOLBOX (Phase 1) ────────────────────────── */
+    renderToolboxCustomizer() {
+        const container = document.getElementById('cust-toolbox-list');
+        if (!container) return;
+        const cfg     = this.getToolboxConfig() || this.migrateToolboxConfig();
+        const ordered = cfg.order.map(id => TOOL_REGISTRY.find(t => t.id === id)).filter(Boolean);
+        const last    = ordered.length - 1;
+
+        container.innerHTML = ordered.map((t, idx) => {
+            const hidden  = cfg.hidden.includes(t.id);
+            return `<div class="cust-widget-row" id="cust-tool-row-${t.id}">
+                <div class="cust-widget-reorder">
+                    <button class="cust-reorder-btn" ${idx === 0 ? 'disabled' : ''}
+                        onclick="app.moveToolboxItem('${t.id}',-1)" title="Move up">↑</button>
+                    <button class="cust-reorder-btn" ${idx === last ? 'disabled' : ''}
+                        onclick="app.moveToolboxItem('${t.id}',1)" title="Move down">↓</button>
+                </div>
+                <div class="cust-widget-info">
+                    <span class="cust-widget-title" style="${hidden ? 'opacity:.45;text-decoration:line-through' : ''}">${t.name}</span>
+                </div>
+                <div class="cust-widget-actions">
+                    <button class="cust-action-btn" onclick="app.toggleToolboxHidden('${t.id}')"
+                        style="${hidden ? '' : 'background:var(--accent);color:var(--bg-card)'}">
+                        ${hidden ? 'Show' : 'Hide'}
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    moveToolboxItem(toolId, dir) {
+        const cfg = this.getToolboxConfig() || this.migrateToolboxConfig();
+        const idx = cfg.order.indexOf(toolId);
+        if (idx < 0) return;
+        const newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= cfg.order.length) return;
+        [cfg.order[idx], cfg.order[newIdx]] = [cfg.order[newIdx], cfg.order[idx]];
+        this.saveToolboxConfig(cfg);
+        this.renderToolboxCustomizer();
+        // Live-update the Toolbox library if it's visible
+        if (document.getElementById('toolbox')?.classList.contains('active')) this.renderToolbox();
+    },
+
+    toggleToolboxHidden(toolId) {
+        const cfg = this.getToolboxConfig() || this.migrateToolboxConfig();
+        const idx = cfg.hidden.indexOf(toolId);
+        if (idx >= 0) cfg.hidden.splice(idx, 1);  // un-hide
+        else          cfg.hidden.push(toolId);     // hide
+        this.saveToolboxConfig(cfg);
+        this.renderToolboxCustomizer();
+        if (document.getElementById('toolbox')?.classList.contains('active')) this.renderToolbox();
+    },
+
 });

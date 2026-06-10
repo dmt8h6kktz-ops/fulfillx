@@ -264,6 +264,29 @@ var app = {
     },
 
 
+    /* ── TOOLBOX CONFIG (order + hidden) ───────────────── */
+    getToolboxConfig() {
+        return JSON.parse(localStorage.getItem('fulfillx.toolboxConfig') || 'null');
+    },
+    saveToolboxConfig(cfg) {
+        localStorage.setItem('fulfillx.toolboxConfig', JSON.stringify(cfg));
+    },
+    // Idempotent migration: every known tool id appears in order; nothing hidden by default.
+    // Call once in init() before any toolbox render.
+    migrateToolboxConfig() {
+        const known = TOOL_REGISTRY.map(t => t.id);
+        const raw   = this.getToolboxConfig();
+        const cfg   = raw || { order: [], hidden: [] };
+        // Append any tool ids missing from order (new built-ins or first run)
+        known.forEach(id => { if (!cfg.order.includes(id)) cfg.order.push(id); });
+        // Remove ids that no longer exist in the registry
+        cfg.order  = cfg.order.filter(id => known.includes(id));
+        // Ensure hidden list only contains valid ids
+        cfg.hidden = (cfg.hidden || []).filter(id => known.includes(id));
+        this.saveToolboxConfig(cfg);
+        return cfg;
+    },
+
     /* ── V1.4 PHASE 2: TOOL ENTRIES STORE ─────────────── */
     getToolEntries() {
         return JSON.parse(localStorage.getItem('fulfillx.toolEntries') || '{}');
