@@ -378,16 +378,16 @@ html, body {
 /* ── SCREEN HEADERS (Toolbox, Habits, Insights) ──────────── */
 .screen-header {
     font-family: 'Baloo 2', sans-serif;
-    color: var(--heading-primary);
-    font-size: 32px;
+    color: var(--t1);
+    font-size: 26px;
     font-weight: 700;
-    margin: 0 0 6px 0;
+    margin: 0 0 4px 0;
 }
 
 .screen-subtext {
-    color: var(--body-muted);
+    color: var(--t3);
     font-size: 13px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     font-weight: 400;
 }
 
@@ -933,7 +933,7 @@ textarea:focus {
 
 /* Tab screens (Toolbox / Habits / Insights) */
 .tab-top {
-    padding: 44px 16px 0;
+    padding: 44px 20px 0;
     flex-shrink: 0;
 }
 
@@ -942,7 +942,7 @@ textarea:focus {
     display: none;
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--bg-page);
+    background: var(--bg);
     z-index: 60;
     flex-direction: column;
 }
@@ -952,32 +952,36 @@ textarea:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 48px 20px 16px;
+    padding: 48px 20px 14px;
     flex-shrink: 0;
-    border-bottom: 1px solid var(--border-card);
+    border-bottom: 1px solid var(--hairline);
 }
 
 .settings-title {
     font-family: 'Baloo 2', sans-serif;
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 700;
-    color: var(--heading-primary);
+    color: var(--t1);
 }
 
 .settings-section {
-    background: var(--bg-card);
-    border-radius: 18px;
-    padding: 16px;
-    margin-bottom: 12px;
+    background: var(--surface);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
 }
 
 .settings-section-label {
     font-family: 'Baloo 2', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--heading-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 1px;
     margin-bottom: 12px;
 }
 
@@ -990,26 +994,26 @@ textarea:focus {
     flex: 1;
     padding: 10px;
     border-radius: 12px;
-    border: 1.5px solid var(--border-card);
-    background: transparent;
+    border: 1px solid var(--border);
+    background: var(--field);
     font-family: 'Fredoka', sans-serif;
     font-size: 14px;
     font-weight: 500;
-    color: var(--body-text);
+    color: var(--t2);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background .15s, color .15s, border-color .15s;
 }
 .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
 .theme-btn.active {
     background: var(--accent);
-    color: var(--bg-card);
+    color: var(--on-accent);
     border-color: var(--accent);
 }
 
 .settings-placeholder {
     font-family: 'Fredoka', sans-serif;
     font-size: 14px;
-    color: var(--body-muted);
+    color: var(--t3);
     font-weight: 400;
 }
 
@@ -1059,7 +1063,7 @@ textarea:focus {
 }
 
 /* ── PHASE 6: CUSTOMIZATION EDITOR ──────────────────────── */
-.cust-journal-block { margin-bottom: 20px; }
+.cust-journal-block { margin-bottom: 18px; }
 
 .cust-journal-header {
     display: flex;
@@ -1070,20 +1074,21 @@ textarea:focus {
 
 .cust-journal-name {
     font-family: 'Baloo 2', sans-serif;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    color: var(--heading-primary);
+    color: var(--t1);
 }
 
 .cust-reset-btn {
     font-family: 'Fredoka', sans-serif;
     font-size: 12px;
-    color: var(--body-muted);
-    background: none;
-    border: 1px solid var(--border-card);
+    color: var(--t3);
+    background: var(--field);
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 3px 10px;
     cursor: pointer;
+    transition: border-color .15s, color .15s;
 }
 .cust-reset-btn:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -1092,7 +1097,7 @@ textarea:focus {
     align-items: center;
     gap: 8px;
     padding: 8px 0;
-    border-bottom: 1px solid var(--border-card);
+    border-bottom: 1px solid var(--hairline);
 }
 
 .cust-widget-reorder {
@@ -1103,19 +1108,20 @@ textarea:focus {
 }
 
 .cust-reorder-btn {
-    background: var(--accent-soft);
-    border: none;
+    background: var(--field);
+    border: 1px solid var(--border);
     border-radius: 5px;
     width: 26px;
     height: 22px;
     cursor: pointer;
     font-size: 11px;
-    color: var(--accent);
+    color: var(--t2);
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background .15s, color .15s;
 }
-.cust-reorder-btn:hover { background: var(--accent-border); }
+.cust-reorder-btn:hover { background: var(--accent-soft); color: var(--accent); }
 .cust-reorder-btn:disabled { opacity: 0.3; cursor: default; }
 
 .cust-widget-info {
@@ -1127,7 +1133,7 @@ textarea:focus {
     font-family: 'Fredoka', sans-serif;
     font-size: 10px;
     font-weight: 500;
-    color: var(--bg-card);
+    color: var(--on-accent);
     background: var(--accent);
     border-radius: 4px;
     padding: 1px 5px;
@@ -1139,7 +1145,7 @@ textarea:focus {
 .cust-widget-title {
     font-family: 'Fredoka', sans-serif;
     font-size: 13px;
-    color: var(--body-text);
+    color: var(--t2);
 }
 
 .cust-widget-actions {
@@ -1149,31 +1155,32 @@ textarea:focus {
 }
 
 .cust-action-btn {
-    background: var(--accent-soft);
-    border: none;
+    background: var(--field);
+    border: 1px solid var(--border);
     border-radius: 7px;
     padding: 4px 9px;
     font-family: 'Fredoka', sans-serif;
     font-size: 12px;
-    color: var(--accent);
+    color: var(--t2);
     cursor: pointer;
+    transition: background .15s, color .15s;
 }
-.cust-action-btn:hover { background: var(--accent-border); }
-.cust-action-btn.del { color: #e55; background: rgba(220,50,50,0.07); }
-.cust-action-btn.del:hover { background: rgba(220,50,50,0.15); }
+.cust-action-btn:hover { background: var(--accent-soft); color: var(--accent); }
+.cust-action-btn.del { color: #e55; background: rgba(220,50,50,0.08); border-color: rgba(220,50,50,.2); }
+.cust-action-btn.del:hover { background: rgba(220,50,50,0.16); }
 
 .add-widget-btn {
     width: 100%;
     margin-top: 8px;
     padding: 9px;
-    border: 1.5px dashed var(--border-card);
+    border: 1px dashed var(--hairline);
     border-radius: 10px;
     background: transparent;
     font-family: 'Fredoka', sans-serif;
     font-size: 13px;
-    color: var(--body-muted);
+    color: var(--t3);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: border-color .15s, color .15s;
 }
 .add-widget-btn:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -1182,7 +1189,7 @@ textarea:focus {
     display: none;
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--bg-page);
+    background: var(--bg);
     z-index: 70;
     flex-direction: column;
 }
@@ -1198,8 +1205,8 @@ textarea:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 48px 0 16px;
-    border-bottom: 1px solid var(--border-card);
+    padding: 48px 0 14px;
+    border-bottom: 1px solid var(--hairline);
     margin-bottom: 16px;
 }
 
@@ -1208,21 +1215,23 @@ textarea:focus {
 .we-label {
     display: block;
     font-family: 'Baloo 2', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--heading-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .8px;
     margin-bottom: 5px;
 }
 
 .we-select {
     width: 100%;
     padding: 10px;
-    border: 1.5px solid var(--input-border);
+    border: 1px solid var(--hairline);
     border-radius: 10px;
     font-family: 'Fredoka', sans-serif;
     font-size: 14px;
-    background: var(--input-bg);
-    color: var(--input-text);
+    background: var(--field);
+    color: var(--t1);
 }
 
 .we-actions {
@@ -1237,7 +1246,7 @@ textarea:focus {
     display: none;
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--bg-page);
+    background: var(--bg);
     z-index: 55;
     flex-direction: column;
 }
@@ -1248,7 +1257,7 @@ textarea:focus {
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
-    border-bottom: 1px solid var(--border-card);
+    border-bottom: 1px solid var(--hairline);
     gap: 8px;
 }
 .habit-manager-item:last-of-type { border-bottom: none; }
@@ -1266,12 +1275,12 @@ textarea:focus {
     font-family: 'Baloo 2', sans-serif;
     font-size: 15px;
     font-weight: 600;
-    color: var(--heading-primary);
+    color: var(--t1);
 }
 .habit-schedule-summary {
     font-family: 'Fredoka', sans-serif;
     font-size: 12px;
-    color: var(--body-muted);
+    color: var(--t3);
     margin-top: 1px;
 }
 .habit-manager-actions { display: flex; gap: 4px; flex-shrink: 0; }
@@ -1283,7 +1292,7 @@ textarea:focus {
     gap: 6px;
     font-family: 'Fredoka', sans-serif;
     font-size: 14px;
-    color: var(--body-text);
+    color: var(--t2);
     cursor: pointer;
 }
 .he-slot-option input { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
@@ -1294,17 +1303,17 @@ textarea:focus {
     flex: 1;
     padding: 8px 0;
     border-radius: 8px;
-    border: 1.5px solid var(--border-card);
-    background: transparent;
+    border: 1px solid var(--border);
+    background: var(--field);
     font-family: 'Fredoka', sans-serif;
     font-size: 11px;
     font-weight: 500;
-    color: var(--body-muted);
+    color: var(--t3);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background .15s, color .15s, border-color .15s;
 }
 .he-day-btn:hover { border-color: var(--accent); color: var(--accent); }
-.he-day-btn.active { background: var(--accent); color: var(--bg-card); border-color: var(--accent); }
+.he-day-btn.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 
 /* ── V1.3 PHASE 6: HOME WEEK STRIP ─────────────────────── */
 .week-strip {
