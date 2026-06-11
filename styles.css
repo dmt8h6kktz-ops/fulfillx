@@ -26,8 +26,8 @@ html[data-theme="light"] {
     --bg-card:          var(--surface-strong);
     --border-card:      var(--hairline);
     --brand-text:       var(--t2);
-    --brand-x-bg:       var(--t1);
-    --brand-x-text:     #FFFFFF;
+    --brand-x-bg:       var(--accent);
+    --brand-x-text:     var(--on-accent);
     --heading-primary:  var(--t1);
     --heading-secondary:var(--t2);
     --quote-color:      var(--t2);
@@ -276,6 +276,38 @@ html, body {
     margin-bottom: 4px;
 }
 
+/* ── HOME QUOTE (centered editorial block) ───────────────── */
+.home-quote {
+    text-align: center;
+    margin: 6px 0 10px;
+}
+.home-quote-mark {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: .8;
+    margin-bottom: 4px;
+}
+.home-body .quote-text {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--t2);
+    line-height: 1.5;
+    text-align: center;
+    margin: 0 0 6px 0;
+}
+.home-body .quote-author {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--t3);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
 /* ── JOURNAL BOXES (home) ────────────────────────────────── */
 .journal-boxes {
     display: flex;
@@ -301,27 +333,28 @@ html, body {
     align-items: center;
 }
 
-/* Hero card — primary session */
+/* Hero card — primary/upcoming session */
 .journal-box.journal-hero {
     background: var(--surface-strong);
     border-radius: 22px;
-    padding: 18px 20px;
-    min-height: 88px;
+    padding: 38px 20px 18px;   /* top padding leaves room for eyebrow label */
+    min-height: 96px;
 }
-.journal-box.journal-hero::after {
-    content: 'NEXT UP';
+/* Eyebrow label using data-hero-label attribute set by _updateHomeHero() */
+.journal-box.journal-hero::before {
+    content: attr(data-hero-label);
     position: absolute;
-    top: 14px; right: 16px;
+    top: 14px; left: 18px;
     font-family: 'Baloo 2', sans-serif;
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 1px;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 1.1px;
     text-transform: uppercase;
     color: var(--accent);
 }
 
-/* Secondary card — other session */
+/* Secondary card — already-done or non-upcoming session */
 .journal-box.journal-secondary {
-    opacity: .85;
+    opacity: .80;
 }
 
 .journal-box:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
@@ -901,17 +934,17 @@ textarea:focus {
     font-size: 30px;
     margin: 0 0 2px 0;
 }
-.home-body .quote-text    { font-size: 14px; margin: 0 0 4px 0; }
-.home-body .quote-author  { font-size: 11px; }
+/* .quote-text and .quote-author are handled by .home-quote rules above */
 
-.home-spacer { flex: 1; min-height: 8px; }
+.home-spacer { flex: 0; min-height: 10px; }
 
 .home-journals {
     flex-shrink: 0;
     padding-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
-
-.home-journals .journal-box { margin-bottom: 0; }
 
 .daytime-pill {
     text-align: center;

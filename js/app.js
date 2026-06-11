@@ -60,7 +60,7 @@ Object.assign(app, {
         const entries = this.getEntries ? this.getEntries() : {};
         const mDone   = !!(entries[today]?.morning && Object.keys(entries[today].morning).length);
         const eDone   = !!(entries[today]?.evening  && Object.keys(entries[today].evening).length);
-        // Time logic: <12 → morning hero; 12-17 → undone morning else evening; ≥17 → evening hero
+        // Time logic: <12 → morning hero; 12–17 → first undone; ≥17 → evening hero
         let morningIsHero;
         if (hour < 12)       morningIsHero = true;
         else if (hour < 17)  morningIsHero = !mDone;
@@ -68,10 +68,27 @@ Object.assign(app, {
         // Completed session is always secondary
         if (mDone) morningIsHero = false;
         if (eDone && !mDone) morningIsHero = true;
-        const bm = document.getElementById('box-morning');
-        const be = document.getElementById('box-evening');
+
+        const bm   = document.getElementById('box-morning');
+        const be   = document.getElementById('box-evening');
+        const pill = document.getElementById('box-daytime');
+        const list = document.querySelector('.home-journals');
+
+        // Apply visual classes
         if (bm) { bm.classList.toggle('journal-hero', morningIsHero); bm.classList.toggle('journal-secondary', !morningIsHero); }
         if (be) { be.classList.toggle('journal-hero', !morningIsHero); be.classList.toggle('journal-secondary', morningIsHero); }
+
+        // Set session-specific eyebrow label (read by CSS ::before via attr())
+        if (bm) bm.dataset.heroLabel = '☀️  Next · Morning';
+        if (be) be.dataset.heroLabel = '🌙  Next · Evening';
+
+        // Reorder DOM so hero floats to top, secondary below, pill last
+        if (list && bm && be && pill) {
+            const hero = morningIsHero ? bm : be;
+            const sec  = morningIsHero ? be : bm;
+            list.insertBefore(hero, list.firstChild);
+            list.insertBefore(sec, pill);
+        }
     },
 
     updateQuote() {
@@ -94,8 +111,8 @@ Object.assign(app, {
         // Use day of year so quote stays consistent through the day
         const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
         const quote = quotes[dayOfYear % quotes.length];
-        document.getElementById('daily-quote-text').textContent = `"${quote.text}"`;
-        document.getElementById('daily-quote-author').textContent = `— ${quote.author}`;
+        document.getElementById('daily-quote-text').textContent = quote.text;
+        document.getElementById('daily-quote-author').textContent = quote.author.toUpperCase();
     },
 
 
