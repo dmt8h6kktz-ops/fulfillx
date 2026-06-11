@@ -552,9 +552,9 @@ html, body {
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.45);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.38);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     z-index: 50;
     align-items: flex-end;
     max-width: 440px;
@@ -565,10 +565,10 @@ html, body {
 
 .journal-detail-content {
     width: 100%;
-    background: var(--bg-page);
-    border-radius: 32px 32px 0 0;
-    padding: 24px 20px 32px;
-    max-height: 88vh;
+    background: var(--bg);
+    border-radius: 28px 28px 0 0;
+    padding: 22px 20px 32px;
+    max-height: 90vh;
     overflow-y: auto;
     animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     -webkit-overflow-scrolling: touch;
@@ -583,25 +583,27 @@ html, body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
 .journal-detail-title {
     font-family: 'Baloo 2', sans-serif;
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--t1);
     margin: 0;
 }
 
 .close-btn {
-    background: var(--close-bg);
-    border: none;
-    font-size: 18px;
+    background: var(--surface);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--border);
+    font-size: 16px;
     cursor: pointer;
-    color: var(--close-color);
-    width: 36px;
-    height: 36px;
+    color: var(--t2);
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     transition: transform 0.2s;
 }
@@ -609,41 +611,44 @@ html, body {
 
 /* ── WIDGETS ─────────────────────────────────────────────── */
 .widget-box {
-    background: var(--bg-card);
-    border-radius: 18px;
-    padding: 16px;
-    margin-bottom: 12px;
-    border: 1.5px solid var(--border-card);
+    background: var(--surface);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
 }
 
 .widget-title {
     font-family: 'Baloo 2', sans-serif;
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 600;
-    color: var(--accent);
-    margin: 0 0 8px 0;
+    color: var(--t1);
+    margin: 0 0 6px 0;
 }
 
 .widget-prompt {
-    font-size: 13px;
-    color: var(--body-muted);
+    font-size: 12.5px;
+    color: var(--t3);
     margin-bottom: 10px;
-    font-style: italic;
+    font-style: normal;
     font-weight: 400;
 }
 
 textarea {
     width: 100%;
-    padding: 12px;
-    border: 1.5px solid var(--input-border);
-    border-radius: 12px;
+    padding: 11px;
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
     font-family: 'Fredoka', sans-serif;
     font-size: 14px;
     resize: vertical;
     min-height: 80px;
-    background: var(--input-bg);
+    background: var(--field);
     font-weight: 400;
-    color: var(--input-text);
+    color: var(--t1);
 }
 
 textarea:focus {
@@ -652,34 +657,34 @@ textarea:focus {
     box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.sleep-scale { display: flex; gap: 6px; margin-bottom: 10px; }
+.sleep-scale { display: flex; gap: 5px; margin-bottom: 10px; }
 
 .scale-btn {
     flex: 1;
-    padding: 10px;
-    background: var(--accent-soft);
-    border: 1.5px solid var(--accent-border);
-    border-radius: 10px;
+    padding: 9px;
+    background: var(--field);
+    border: 1px solid var(--border);
+    border-radius: 9px;
     font-family: 'Fredoka', sans-serif;
     font-size: 13px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background .15s, color .15s, border-color .15s;
     font-weight: 500;
-    color: var(--accent);
+    color: var(--t2);
 }
-.scale-btn:hover { background: var(--accent-soft); filter: brightness(0.95); }
-.scale-btn.active { background: var(--accent); color: var(--bg-card); border-color: var(--accent); }
+.scale-btn:hover { background: var(--accent-soft); color: var(--accent); }
+.scale-btn.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 
 .emoji-scale { display: flex; gap: 8px; margin: 8px 0; }
 .emoji-btn {
     flex: 1;
-    background: var(--accent-soft);
-    border: 1.5px solid transparent;
+    background: var(--field);
+    border: 1px solid var(--border);
     cursor: pointer;
-    font-size: 28px;
+    font-size: 26px;
     padding: 8px;
     border-radius: 12px;
-    transition: all 0.2s;
+    transition: transform .15s, border-color .15s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -689,36 +694,39 @@ textarea:focus {
 .emoji-btn.active {
     transform: scale(1.1);
     border-color: var(--accent);
+    background: var(--accent-soft);
 }
 
 .habit-check {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 0;
+    padding: 9px 0;
     font-size: 14px;
     cursor: pointer;
-    color: var(--body-text);
+    color: var(--t2);
+    border-bottom: 1px solid var(--hairline);
 }
+.habit-check:last-child { border-bottom: none; }
 .habit-check input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
     accent-color: var(--accent);
 }
-.habit-check label { cursor: pointer; flex: 1; }
-.habit-check span { color: #4CAF50; font-weight: 600; }
-.habit-empty { font-family: 'Fredoka', sans-serif; font-size: 13px; color: var(--body-muted); font-style: italic; padding: 4px 0; }
+.habit-check label { cursor: pointer; flex: 1; color: var(--t1); }
+.habit-check span { color: var(--success); font-weight: 600; }
+.habit-empty { font-family: 'Fredoka', sans-serif; font-size: 13px; color: var(--t3); font-style: italic; padding: 4px 0; }
 
 .hours-input {
     width: 100%;
     padding: 10px;
-    border: 1.5px solid var(--input-border);
+    border: 1px solid var(--hairline);
     border-radius: 10px;
     font-family: 'Fredoka', sans-serif;
     font-size: 14px;
-    background: var(--input-bg);
-    color: var(--input-text);
+    background: var(--field);
+    color: var(--t1);
 }
 .hours-input:focus {
     outline: none;
@@ -728,44 +736,49 @@ textarea:focus {
 
 .save-btn {
     width: 100%;
-    padding: 16px;
+    padding: 14px;
     background: var(--accent);
-    color: var(--bg-card);
+    color: var(--on-accent);
     border: none;
-    border-radius: 16px;
+    border-radius: 14px;
     font-family: 'Baloo 2', sans-serif;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     margin-top: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    transition: transform .2s, box-shadow .2s;
+    box-shadow: 0 4px 16px rgba(0,0,0,.15);
 }
-.save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+.save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.20); }
 .save-btn:active { transform: scale(0.98); }
 
-/* ── INSIGHTS ────────────────────────────────────────────── */
+/* ── INSIGHTS (Phase 4 full restyle; this keeps legacy cards alive) */
 .insight-stat {
-    background: var(--bg-card);
-    border-radius: 18px;
-    padding: 18px;
-    margin-bottom: 12px;
-    border: 1.5px solid var(--border-card);
+    background: var(--surface);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
 }
 .insight-stat-label {
     font-family: 'Baloo 2', sans-serif;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--accent);
     margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
 }
 .insight-stat-value {
-    font-size: 32px;
-    font-weight: 600;
-    color: var(--heading-primary);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--t1);
     margin: 4px 0;
 }
-.insight-stat-desc { font-size: 12px; color: var(--body-muted); font-weight: 400; }
+.insight-stat-desc { font-size: 12px; color: var(--t3); font-weight: 400; }
 
 /* ── BOTTOM NAV ──────────────────────────────────────────── */
 .bottom-nav {
@@ -1003,18 +1016,19 @@ textarea:focus {
 /* ── PHASE 4: GOAL REVIEW ────────────────────────────────── */
 .goal-review-goal {
     font-family: 'Baloo 2', sans-serif;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
-    color: var(--heading-primary);
-    background: var(--accent-soft);
+    color: var(--t1);
+    background: var(--field);
     border-radius: 10px;
     padding: 10px 12px;
     margin-bottom: 4px;
     min-height: 38px;
     line-height: 1.4;
+    border: 1px solid var(--hairline);
 }
 
-.goal-review-q { margin-top: 12px; }
+.goal-review-q { margin-top: 12px; color: var(--t2); font-size: 13px; }
 
 .goal-review-btns {
     display: flex;
@@ -1026,19 +1040,19 @@ textarea:focus {
     flex: 1;
     padding: 9px;
     border-radius: 10px;
-    border: 1.5px solid var(--accent-border);
+    border: 1px solid var(--border);
     background: transparent;
     font-family: 'Fredoka', sans-serif;
     font-size: 14px;
     font-weight: 500;
-    color: var(--accent);
+    color: var(--t2);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background .15s, color .15s, border-color .15s;
 }
-.goal-review-btn:hover { background: var(--accent-soft); }
+.goal-review-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 .goal-review-btn.active {
     background: var(--accent);
-    color: var(--bg-card);
+    color: var(--on-accent);
     border-color: var(--accent);
 }
 
@@ -1471,14 +1485,14 @@ textarea:focus {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 0 4px;
+    padding: 10px 0 4px;
 }
 .photo-thumb {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
     border-radius: 12px;
     object-fit: cover;
-    border: 1.5px solid var(--border-card);
+    border: 1px solid var(--border);
     flex-shrink: 0;
 }
 .photo-pick-btn {
@@ -1486,27 +1500,27 @@ textarea:focus {
     align-items: center;
     gap: 6px;
     padding: 9px 14px;
-    border: 1.5px dashed var(--border-card);
+    border: 1px dashed var(--hairline);
     border-radius: 12px;
-    background: transparent;
+    background: var(--field);
     font-family: 'Fredoka', sans-serif;
     font-size: 13px;
-    color: var(--body-muted);
+    color: var(--t3);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: border-color .15s, color .15s;
 }
 .photo-pick-btn:hover { border-color: var(--accent); color: var(--accent); }
 .photo-remove-btn {
     font-family: 'Fredoka', sans-serif;
     font-size: 12px;
     color: #e55;
-    background: rgba(220,50,50,0.07);
+    background: rgba(220,50,50,0.08);
     border: none;
     border-radius: 8px;
     padding: 4px 10px;
     cursor: pointer;
 }
-.photo-remove-btn:hover { background: rgba(220,50,50,0.15); }
+.photo-remove-btn:hover { background: rgba(220,50,50,0.16); }
 
 /* ── V1.3 PHASE 3: REMINDERS ────────────────────────────── */
 .reminder-row {
