@@ -13,6 +13,7 @@ Object.assign(app, {
         this.renderToolbox();
         this.renderHabits();
         this.updateCompletionBadges();
+        this._updateHomeHero();
         this.renderInsights();
         this.updateTodoFab();
         this.renderWeekStrip();
@@ -26,10 +27,12 @@ Object.assign(app, {
     },
 
     applyTheme(pref) {
-        const container = document.getElementById('appContainer');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const useDark = pref === 'dark' || (pref === 'system' && prefersDark);
-        container.classList.toggle('theme-graphite', useDark);
+        // New: drive theme via data-theme on <html>
+        document.documentElement.setAttribute('data-theme', useDark ? 'dark' : 'light');
+        // Legacy: keep .theme-graphite class in sync (removes itself over phases)
+        document.getElementById('appContainer')?.classList.toggle('theme-graphite', useDark);
         if (pref !== 'system') localStorage.setItem('fulfillx.theme', pref);
         else localStorage.setItem('fulfillx.theme', 'system');
     },
@@ -40,6 +43,35 @@ Object.assign(app, {
         if (hour < 12) greeting.textContent = 'Good morning';
         else if (hour < 17) greeting.textContent = 'Good afternoon';
         else greeting.textContent = 'Good evening';
+        this._updateHomeEyebrow();
+        this._updateHomeHero();
+    },
+
+    _updateHomeEyebrow() {
+        const el = document.getElementById('home-eyebrow');
+        if (!el) return;
+        const now = new Date();
+        el.textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+    },
+
+    _updateHomeHero() {
+        const hour    = new Date().getHours();
+        const today   = this.getTodayKey ? this.getTodayKey() : localDateKey();
+        const entries = this.getEntries ? this.getEntries() : {};
+        const mDone   = !!(entries[today]?.morning && Object.keys(entries[today].morning).length);
+        const eDone   = !!(entries[today]?.evening  && Object.keys(entries[today].evening).length);
+        // Time logic: <12 → morning hero; 12-17 → undone morning else evening; ≥17 → evening hero
+        let morningIsHero;
+        if (hour < 12)       morningIsHero = true;
+        else if (hour < 17)  morningIsHero = !mDone;
+        else                 morningIsHero = false;
+        // Completed session is always secondary
+        if (mDone) morningIsHero = false;
+        if (eDone && !mDone) morningIsHero = true;
+        const bm = document.getElementById('box-morning');
+        const be = document.getElementById('box-evening');
+        if (bm) { bm.classList.toggle('journal-hero', morningIsHero); bm.classList.toggle('journal-secondary', !morningIsHero); }
+        if (be) { be.classList.toggle('journal-hero', !morningIsHero); be.classList.toggle('journal-secondary', morningIsHero); }
     },
 
     updateQuote() {

@@ -1,79 +1,130 @@
-/* ── DESIGN TOKENS ───────────────────────────────────────── */
-:root {
-    /* Slate (light) defaults */
-    --bg-page:          #EEF0F3;
-    --bg-card:          #FFFFFF;
-    --border-card:      #E0E2E6;
+/* ── DESIGN TOKENS — warm-night system ──────────────────── */
+/* One data-theme attribute on <html> flips every surface.   */
+/* No raw theme colors anywhere — only var(--…).             */
 
-    --brand-text:       #4A4E57;
-    --brand-x-bg:       #2D3142;
+html[data-theme="light"] {
+    /* Core palette */
+    --bg:          radial-gradient(130% 78% at 70% -8%, #F5F6F8 0%, #EDEFF2 44%, #E8EAEE 100%);
+    --glow-1:      rgba(236,132,104,.13);
+    --glow-2:      rgba(245,200,150,.10);
+    --t1:          #2D3142;
+    --t2:          #6B7079;
+    --t3:          #A6AAB2;
+    --accent:      #EC8468;
+    --on-accent:   #FFFFFF;
+    --success:     #5BA37F;
+    --surface:     rgba(255,255,255,.70);
+    --surface-strong: rgba(255,255,255,.88);
+    --border:      rgba(210,213,220,.70);
+    --blur:        14px;
+    --shadow:      0 10px 28px rgba(70,80,100,.10);
+    --field:       rgba(45,49,66,.06);
+    --nav-bg:      rgba(255,255,255,.82);
+    --hairline:    rgba(180,185,195,.35);
+    /* Legacy aliases — keep existing UI working */
+    --bg-page:          var(--bg);
+    --bg-card:          var(--surface-strong);
+    --border-card:      var(--hairline);
+    --brand-text:       var(--t2);
+    --brand-x-bg:       var(--t1);
     --brand-x-text:     #FFFFFF;
-
-    --heading-primary:  #2D3142;
-    --heading-secondary:#8A8E97;
-
-    --quote-color:      #3D414C;
-    --quote-author:     #8A8E97;
-
-    --journal-title:    #2D3142;
-    --journal-desc:     #9A9EA7;
-
-    --nav-bg:           #FFFFFF;
-    --nav-border:       #E0E2E6;
-    --nav-item:         #B0B4BC;
-    --nav-active:       #2D3142;
-
-    --accent:           #2D3142;
-    --accent-soft:      rgba(45,49,66,0.07);
-    --accent-border:    rgba(45,49,66,0.18);
-
-    --input-bg:         #F8F9FA;
-    --input-border:     rgba(45,49,66,0.18);
-    --input-text:       #2D3142;
-
-    --close-bg:         rgba(0,0,0,0.06);
-    --close-color:      #8A8E97;
-
-    --body-text:        #4A4E57;
-    --body-muted:       #9A9EA7;
+    --heading-primary:  var(--t1);
+    --heading-secondary:var(--t2);
+    --quote-color:      var(--t2);
+    --quote-author:     var(--t3);
+    --journal-title:    var(--t1);
+    --journal-desc:     var(--t3);
+    --nav-border:       var(--hairline);
+    --nav-item:         var(--t3);
+    --nav-active:       var(--accent);
+    --accent-soft:      rgba(236,132,104,.10);
+    --accent-border:    rgba(236,132,104,.28);
+    --input-bg:         var(--field);
+    --input-border:     var(--hairline);
+    --input-text:       var(--t1);
+    --close-bg:         rgba(45,49,66,.06);
+    --close-color:      var(--t2);
+    --body-text:        var(--t2);
+    --body-muted:       var(--t3);
 }
 
-.theme-graphite {
-    --bg-page:          linear-gradient(180deg,#1E1E23 0%,#2A2A31 100%);
-    --bg-card:          #2E2E35;
-    --border-card:      #3A3A42;
+html[data-theme="dark"] {
+    /* Core palette */
+    --bg:          radial-gradient(130% 78% at 70% -8%, #342A2B 0%, #221C1C 42%, #16110F 100%);
+    --glow-1:      rgba(242,150,124,.36);
+    --glow-2:      rgba(232,165,110,.17);
+    --t1:          #F5F2FB;
+    --t2:          #A8A2BE;
+    --t3:          #857F9C;
+    --accent:      #F2967C;
+    --on-accent:   #16110F;
+    --success:     #7FD0A0;
+    --surface:     rgba(255,255,255,.06);
+    --surface-strong: rgba(255,255,255,.10);
+    --border:      rgba(255,255,255,.12);
+    --blur:        14px;
+    --shadow:      0 10px 30px rgba(0,0,0,.28);
+    --field:       rgba(255,255,255,.07);
+    --nav-bg:      rgba(18,16,24,.65);
+    --hairline:    rgba(255,255,255,.09);
+    /* Legacy aliases */
+    --bg-page:          var(--bg);
+    --bg-card:          rgba(255,255,255,.08);
+    --border-card:      var(--hairline);
+    --brand-text:       var(--t2);
+    --brand-x-bg:       var(--accent);
+    --brand-x-text:     var(--on-accent);
+    --heading-primary:  var(--t1);
+    --heading-secondary:var(--t2);
+    --quote-color:      var(--t2);
+    --quote-author:     var(--t3);
+    --journal-title:    var(--t1);
+    --journal-desc:     var(--t3);
+    --nav-border:       var(--hairline);
+    --nav-item:         var(--t3);
+    --nav-active:       var(--accent);
+    --accent-soft:      rgba(242,150,124,.13);
+    --accent-border:    rgba(242,150,124,.30);
+    --input-bg:         var(--field);
+    --input-border:     var(--hairline);
+    --input-text:       var(--t1);
+    --close-bg:         rgba(255,255,255,.07);
+    --close-color:      var(--t2);
+    --body-text:        var(--t2);
+    --body-muted:       var(--t3);
+}
 
-    --brand-text:       #9A9AA5;
-    --brand-x-bg:       #E8836F;
-    --brand-x-text:     #1E1E23;
-
-    --heading-primary:  #F0F0F4;
-    --heading-secondary:#7A7A85;
-
-    --quote-color:      #C5C5CE;
-    --quote-author:     #7A7A85;
-
-    --journal-title:    #E8836F;
-    --journal-desc:     #8A8A95;
-
-    --nav-bg:           #26262C;
-    --nav-border:       #3A3A42;
-    --nav-item:         #6A6A75;
-    --nav-active:       #E8836F;
-
-    --accent:           #E8836F;
-    --accent-soft:      rgba(232,131,111,0.12);
-    --accent-border:    rgba(232,131,111,0.28);
-
-    --input-bg:         #26262C;
-    --input-border:     rgba(232,131,111,0.22);
-    --input-text:       #F0F0F4;
-
-    --close-bg:         rgba(255,255,255,0.08);
-    --close-color:      #7A7A85;
-
-    --body-text:        #C5C5CE;
-    --body-muted:       #7A7A85;
+/* Fallback for browsers/states where neither block applies yet */
+:root {
+    --accent:      #EC8468;
+    --on-accent:   #FFFFFF;
+    --t1:          #2D3142;
+    --t2:          #6B7079;
+    --t3:          #A6AAB2;
+    --surface:     rgba(255,255,255,.70);
+    --surface-strong: rgba(255,255,255,.88);
+    --border:      rgba(210,213,220,.70);
+    --blur:        14px;
+    --shadow:      0 10px 28px rgba(70,80,100,.10);
+    --field:       rgba(45,49,66,.06);
+    --nav-bg:      rgba(255,255,255,.82);
+    --hairline:    rgba(180,185,195,.35);
+    --bg-page:     #EDEFF2;
+    --bg-card:     rgba(255,255,255,.88);
+    --border-card: rgba(180,185,195,.35);
+    --heading-primary:  #2D3142;
+    --heading-secondary:#6B7079;
+    --accent-soft:      rgba(236,132,104,.10);
+    --accent-border:    rgba(236,132,104,.28);
+    --input-bg:    rgba(45,49,66,.06);
+    --input-border:rgba(180,185,195,.35);
+    --input-text:  #2D3142;
+    --body-text:   #6B7079;
+    --body-muted:  #A6AAB2;
+    --success:     #5BA37F;
+    --glow-1:      rgba(236,132,104,.13);
+    --glow-2:      rgba(245,200,150,.10);
+    --bg:          #EDEFF2;
 }
 
 /* ── RESET ───────────────────────────────────────────────── */
@@ -89,7 +140,7 @@ html, body {
     width: 100%;
     height: 100%;
     font-family: 'Fredoka', sans-serif;
-    background: #1E1E23;
+    background: var(--bg, #1A1612);
     overflow: hidden;
 }
 
@@ -103,8 +154,29 @@ html, body {
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    background: var(--bg-page);
+    background: var(--bg);
 }
+/* Ambient glow blobs — purely decorative */
+.app-container::before,
+.app-container::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+.app-container::before {
+    width: 280px; height: 280px;
+    top: -60px; right: -60px;
+    background: radial-gradient(circle, var(--glow-1) 0%, transparent 70%);
+}
+.app-container::after {
+    width: 220px; height: 220px;
+    bottom: 120px; left: -80px;
+    background: radial-gradient(circle, var(--glow-2) 0%, transparent 70%);
+}
+/* Every direct child of .app-container needs z-index > 0 to sit above blobs */
+.content-wrapper, .bottom-nav { position: relative; z-index: 1; }
 
 .content-wrapper {
     flex: 1;
@@ -192,88 +264,110 @@ html, body {
 
 /* .screen visibility controlled by Phase 3 rules below */
 
+/* ── HOME EYEBROW ────────────────────────────────────────── */
+.home-eyebrow {
+    display: block;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+
 /* ── JOURNAL BOXES (home) ────────────────────────────────── */
 .journal-boxes {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     padding-bottom: 16px;
 }
 
 .journal-box {
-    background: var(--bg-card);
+    background: var(--surface);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
     border-radius: 18px;
-    padding: 16px 20px;
+    padding: 15px 18px;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-    min-height: 80px;
+    transition: transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .22s;
+    box-shadow: var(--shadow);
+    min-height: 72px;
     position: relative;
     overflow: hidden;
-    border: 1.5px solid var(--border-card);
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
 }
 
-.journal-box:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+/* Hero card — primary session */
+.journal-box.journal-hero {
+    background: var(--surface-strong);
+    border-radius: 22px;
+    padding: 18px 20px;
+    min-height: 88px;
+}
+.journal-box.journal-hero::after {
+    content: 'NEXT UP';
+    position: absolute;
+    top: 14px; right: 16px;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent);
 }
 
+/* Secondary card — other session */
+.journal-box.journal-secondary {
+    opacity: .85;
+}
+
+.journal-box:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
 .journal-box:active { transform: scale(0.97); }
 
-.journal-box.completed {
-    border-color: rgba(76,175,80,0.45);
-}
+.journal-box.completed { border-color: rgba(127,208,160,.38); }
 
 .journal-icon {
-    font-size: 30px;
-    margin-right: 16px;
+    font-size: 26px;
+    margin-right: 14px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: var(--accent);
-    animation: bounce 2.5s ease-in-out infinite;
-}
-
-.journal-box:nth-child(2) .journal-icon { animation-delay: 0.3s; }
-.journal-box:nth-child(3) .journal-icon { animation-delay: 0.6s; }
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-5px); }
 }
 
 .journal-title {
     font-family: 'Baloo 2', sans-serif;
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 600;
-    color: var(--journal-title);
+    color: var(--t1);
     margin: 0 0 2px 0;
 }
 
 .journal-desc {
     font-size: 12px;
-    color: var(--journal-desc);
+    color: var(--t3);
     margin: 0;
     font-weight: 400;
 }
 
 .completion-check {
     position: absolute;
-    top: 14px;
-    right: 16px;
-    background: #4CAF50;
-    color: white;
-    width: 26px;
-    height: 26px;
+    top: 12px;
+    right: 14px;
+    background: var(--success);
+    color: var(--on-accent);
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    box-shadow: 0 3px 10px rgba(76,175,80,0.4);
-    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-size: 11px;
+    box-shadow: 0 2px 8px rgba(127,208,160,.35);
+    animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes scaleIn {
@@ -677,7 +771,9 @@ textarea:focus {
 .bottom-nav {
     display: flex;
     background: var(--nav-bg);
-    border-top: 1px solid var(--nav-border);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border-top: 1px solid var(--hairline);
     margin-top: auto;
     position: relative;
     z-index: 10;
@@ -691,18 +787,18 @@ textarea:focus {
     font-family: 'Fredoka', sans-serif;
     font-size: 11px;
     font-weight: 500;
-    color: var(--nav-item);
+    color: var(--t3);
     cursor: pointer;
     border: none;
     background: transparent;
-    transition: all 0.3s ease;
+    transition: color .2s, transform .2s;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 3px;
 }
 .nav-item:active { transform: scale(0.92); }
-.nav-item.active { color: var(--nav-active); }
+.nav-item.active { color: var(--accent); }
 .nav-icon { font-size: 20px; transition: transform 0.3s ease; }
 .nav-item.active .nav-icon { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
@@ -718,14 +814,14 @@ textarea:focus {
     top: 30px;
     left: 50%;
     transform: translateX(-50%) translateY(-100px);
-    background: #4CAF50;
-    color: white;
-    padding: 14px 28px;
+    background: var(--success);
+    color: var(--on-accent);
+    padding: 12px 26px;
     border-radius: 50px;
     font-family: 'Fredoka', sans-serif;
     font-size: 14px;
     font-weight: 500;
-    box-shadow: 0 6px 20px rgba(76,175,80,0.4);
+    box-shadow: 0 6px 20px rgba(0,0,0,.18);
     z-index: 100;
     opacity: 0;
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -759,17 +855,19 @@ textarea:focus {
 .home-topbar .brand-mark { margin: 0; }
 
 .gear-btn {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: var(--bg-card);
-    border: 1.5px solid var(--border-card);
+    background: var(--surface);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 17px;
-    color: var(--heading-primary);
+    font-size: 16px;
+    color: var(--t2);
     transition: transform 0.2s;
     flex-shrink: 0;
 }
@@ -780,33 +878,35 @@ textarea:focus {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 20px 20px 0;
+    padding: 14px 20px 0;
     overflow: hidden;
 }
 
-.home-body .greeting-text { font-size: 36px; margin: 0 0 2px 0; }
-.home-body .time-text     { margin: 0 0 20px 0; }
-.home-body .quote-text    { margin: 0 0 6px 0; }
-.home-body .quote-author  { }
+.home-body .greeting-text {
+    font-size: 30px;
+    margin: 0 0 2px 0;
+}
+.home-body .quote-text    { font-size: 14px; margin: 0 0 4px 0; }
+.home-body .quote-author  { font-size: 11px; }
 
-.home-spacer { flex: 1; min-height: 12px; }
+.home-spacer { flex: 1; min-height: 8px; }
 
 .home-journals {
     flex-shrink: 0;
     padding-bottom: 12px;
 }
 
-.home-journals .journal-box { margin-bottom: 10px; }
+.home-journals .journal-box { margin-bottom: 0; }
 
 .daytime-pill {
     text-align: center;
-    margin: 4px auto 0;
+    margin: 8px auto 0;
     padding: 9px 24px;
-    border: 1.5px dashed var(--border-card);
+    border: 1px dashed var(--hairline);
     border-radius: 20px;
     font-family: 'Fredoka', sans-serif;
     font-size: 13px;
-    color: var(--body-muted);
+    color: var(--t3);
     cursor: pointer;
     background: transparent;
     display: block;
@@ -814,7 +914,7 @@ textarea:focus {
     letter-spacing: 0.2px;
 }
 .daytime-pill:hover { border-color: var(--accent); color: var(--accent); }
-.daytime-pill.completed { border-color: rgba(76,175,80,0.5); color: #4CAF50; }
+.daytime-pill.completed { border-color: rgba(127,208,160,.5); color: var(--success); }
 
 /* Tab screens (Toolbox / Habits / Insights) */
 .tab-top {
@@ -1194,7 +1294,7 @@ textarea:focus {
 .week-strip {
     display: flex;
     gap: 4px;
-    padding: 12px 20px 0;
+    padding: 10px 20px 0;
     flex-shrink: 0;
 }
 .week-day {
@@ -1208,7 +1308,7 @@ textarea:focus {
 .week-day-label {
     font-family: 'Fredoka', sans-serif;
     font-size: 10px;
-    color: var(--body-muted);
+    color: var(--t3);
     text-transform: uppercase;
     letter-spacing: .3px;
 }
@@ -1217,17 +1317,18 @@ textarea:focus {
     color: var(--accent);
 }
 .week-day-circle {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: var(--field);
     position: relative;
 }
 .week-day.current .week-day-circle {
-    box-shadow: 0 0 0 2px var(--accent);
+    box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--glow-1);
 }
 .week-day-circle img {
     width: 100%;
@@ -1236,8 +1337,8 @@ textarea:focus {
 }
 .week-day-num {
     font-family: 'Fredoka', sans-serif;
-    font-size: 13px;
-    color: var(--body-text);
+    font-size: 12px;
+    color: var(--t2);
 }
 .week-day.current .week-day-num {
     font-weight: 700;
