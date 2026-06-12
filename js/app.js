@@ -2,6 +2,10 @@
 
 Object.assign(app, {
     init() {
+        // First-launch onboarding gate — runs before ANY default seeding so the
+        // existing-user check can't misfire. Returns true only on a genuine fresh
+        // install (onboarding shown); init resumes via obFinish() → this.init().
+        if (this.maybeStartOnboarding()) return;
         this.migrateV16Config();     // idempotent — safe on every load
         this.migrateToolboxConfig(); // idempotent — seeds order/hidden
         this.getConfig();
@@ -39,7 +43,9 @@ Object.assign(app, {
 
     updateGreeting() {
         const hour = new Date().getHours();
-        const name = 'Daryl';
+        // Name comes from onboarding (fulfillx.name); falls back to the prior
+        // hardcoded default so existing installs greet exactly as before.
+        const name = localStorage.getItem('fulfillx.name') || 'Daryl';
         const greeting = document.getElementById('greeting');
         let base;
         if (hour < 12) base = 'Good morning';
