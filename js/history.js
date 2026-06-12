@@ -18,7 +18,7 @@ Object.assign(app, {
             days.push({ date: dateStr, dayNum: d.getDate(), isCurrent: dateStr === today });
         }
 
-        const DAY_LABELS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+        const DAY_LABELS = ['S','M','T','W','T','F','S'];
         strip.innerHTML = days.map((day, i) => {
             const hasP = this.hasPhoto(day.date);
             const inner = hasP

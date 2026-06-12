@@ -936,7 +936,10 @@ textarea:focus {
 }
 /* .quote-text and .quote-author are handled by .home-quote rules above */
 
-.home-spacer { flex: 0; min-height: 10px; }
+/* Flexible spacers distribute the home column so it fills top→bottom
+   with even rhythm instead of pooling content at the top. */
+.home-flex { flex: 1 1 0; min-height: 8px; }
+.home-flex-sm { flex: 0.5 1 0; min-height: 6px; }
 
 .home-journals {
     flex-shrink: 0;
@@ -1348,11 +1351,11 @@ textarea:focus {
 .he-day-btn:hover { border-color: var(--accent); color: var(--accent); }
 .he-day-btn.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 
-/* ── V1.3 PHASE 6: HOME WEEK STRIP ─────────────────────── */
+/* ── V1.3 PHASE 6: HOME WEEK STRIP (rounded-square cells) ── */
 .week-strip {
     display: flex;
-    gap: 4px;
-    padding: 10px 20px 0;
+    gap: 6px;
+    padding: 0;
     flex-shrink: 0;
 }
 .week-day {
@@ -1360,24 +1363,25 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
 }
 .week-day-label {
     font-family: 'Fredoka', sans-serif;
-    font-size: 10px;
+    font-size: 11px;
     color: var(--t3);
     text-transform: uppercase;
-    letter-spacing: .3px;
+    letter-spacing: .4px;
 }
 .week-day.current .week-day-label {
     font-weight: 600;
     color: var(--accent);
 }
 .week-day-circle {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 42px;
+    border-radius: 13px;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -1386,7 +1390,7 @@ textarea:focus {
     position: relative;
 }
 .week-day.current .week-day-circle {
-    box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--glow-1);
+    box-shadow: 0 0 0 2px var(--accent), 0 0 14px var(--glow-1);
 }
 .week-day-circle img {
     width: 100%;
@@ -1395,7 +1399,7 @@ textarea:focus {
 }
 .week-day-num {
     font-family: 'Fredoka', sans-serif;
-    font-size: 12px;
+    font-size: 13px;
     color: var(--t2);
 }
 .week-day.current .week-day-num {

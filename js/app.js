@@ -39,10 +39,13 @@ Object.assign(app, {
 
     updateGreeting() {
         const hour = new Date().getHours();
+        const name = 'Daryl';
         const greeting = document.getElementById('greeting');
-        if (hour < 12) greeting.textContent = 'Good morning';
-        else if (hour < 17) greeting.textContent = 'Good afternoon';
-        else greeting.textContent = 'Good evening';
+        let base;
+        if (hour < 12) base = 'Good morning';
+        else if (hour < 17) base = 'Good afternoon';
+        else base = 'Good evening';
+        greeting.textContent = `${base}, ${name}`;
         this._updateHomeEyebrow();
         this._updateHomeHero();
     },
