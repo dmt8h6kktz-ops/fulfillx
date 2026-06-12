@@ -1220,6 +1220,50 @@ textarea:focus {
 }
 .add-widget-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+/* ── Backup & Restore ────────────────────────────────────── */
+.backup-help {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--t3);
+    margin: 0 0 12px;
+}
+.backup-actions {
+    display: flex;
+    gap: 8px;
+}
+.backup-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--field);
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--t2);
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+}
+.backup-btn i { font-size: 16px; }
+.backup-btn:hover { border-color: var(--accent); color: var(--accent); }
+.backup-status {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--t3);
+    margin-top: 10px;
+    min-height: 18px;
+}
+.backup-status:empty { margin-top: 0; min-height: 0; }
+.backup-status.is-success { color: var(--success); }
+.backup-status.is-error   { color: var(--accent); }
+.backup-status.is-busy    { color: var(--t2); }
+
 /* Widget Editor overlay */
 .widget-editor-overlay {
     display: none;

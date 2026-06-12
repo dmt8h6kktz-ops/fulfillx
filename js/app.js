@@ -148,6 +148,7 @@ Object.assign(app, {
         this.updateThemeButtons();
         this.renderCustomizationEditor();
         this.renderToolboxCustomizer();
+        this.renderBackup();
     },
 
     closeSettings() {

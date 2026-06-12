@@ -151,6 +151,17 @@
                         <div id="cust-toolbox-list"></div>
                     </div>
                 </div>
+
+                <div class="settings-section">
+                    <div class="settings-section-label">Backup &amp; Restore</div>
+                    <p class="backup-help">Export saves a single file with everything on this device — entries, habits, Toolbox setup, journal customizations, settings, theme, and photos. Import restores a backup file onto this device.</p>
+                    <div class="backup-actions">
+                        <button class="backup-btn" onclick="app.exportBackup()"><i class="ph ph-download-simple"></i> Export backup</button>
+                        <button class="backup-btn" onclick="app.importBackup()"><i class="ph ph-upload-simple"></i> Import backup</button>
+                    </div>
+                    <div class="backup-status" id="backupStatus" role="status" aria-live="polite"></div>
+                    <input type="file" id="backupFileInput" accept="application/json,.json" style="display:none" onchange="app.onBackupFileChosen(this)">
+                </div>
             </div>
         </div>
 
@@ -389,6 +400,7 @@
     <script src="js/toolbox.js"></script>
     <script src="js/insights.js"></script>
     <script src="js/onboarding.js"></script>
+    <script src="js/backup.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
