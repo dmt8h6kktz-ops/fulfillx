@@ -19,6 +19,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="FulFillX">
 
+    <script>
+      // App Lock pre-paint gate (privacy gate, NOT encryption). Synchronous
+      // localStorage read so the lock screen paints before any app content when
+      // armed — avoids a flash of the app on launch. Real logic lives in applock.js.
+      try {
+        if (localStorage.getItem('applock.enabled') === '1' && localStorage.getItem('applock.pin')) {
+          document.documentElement.classList.add('applock-armed');
+        }
+      } catch (e) { /* storage blocked → app opens normally, no lock */ }
+    </script>
 </head>
 <body>
     <div class="app-container" id="appContainer">
@@ -191,7 +201,36 @@
                     </div>
                 </div>
 
-                <!-- INSERTION POINT: SECURITY section (Build 2 — App Lock) slots in here, between CUSTOMIZE and YOUR DATA -->
+                <!-- SECURITY (Build 2 — App Lock) -->
+                <div class="settings-section" id="securitySection">
+                    <div class="settings-section-label">Security</div>
+                    <div class="set-reminder-row" id="sec-row-lock">
+                        <div class="set-reminder-info">
+                            <i class="ph ph-lock-key"></i>
+                            <div>
+                                <div class="set-reminder-title">App Lock</div>
+                                <div class="set-row-sub">Require a PIN to open FulFillX</div>
+                            </div>
+                        </div>
+                        <button class="set-switch" id="sec-switch-lock" role="switch" aria-label="Toggle App Lock"
+                                onclick="app.lockToggle()"><span class="set-switch-knob"></span></button>
+                    </div>
+                    <div class="set-reminder-row" id="sec-row-face" hidden>
+                        <div class="set-reminder-info">
+                            <i class="ph ph-scan"></i>
+                            <div>
+                                <div class="set-reminder-title">Unlock with Face ID</div>
+                                <div class="set-row-sub">Use your device biometrics</div>
+                            </div>
+                        </div>
+                        <button class="set-switch" id="sec-switch-face" role="switch" aria-label="Toggle Face ID unlock"
+                                onclick="app.lockToggleFaceID()"><span class="set-switch-knob"></span></button>
+                    </div>
+                    <button class="set-link-row" id="sec-change-pin" hidden onclick="app.lockChangePin()">
+                        <span class="set-link-label"><i class="ph ph-password"></i> Change PIN</span>
+                        <i class="ph ph-caret-right"></i>
+                    </button>
+                </div>
 
                 <!-- YOUR DATA -->
                 <div class="settings-section">
@@ -442,6 +481,77 @@
         </div>
     </div>
 
+    <!-- ── APP LOCK overlays (privacy gate, NOT encryption) ───────────────── -->
+    <!-- Launch / set / confirm / verify PIN pad. Outermost gate; reused in-app. -->
+    <div class="applock-overlay" id="appLock" aria-hidden="true">
+        <div class="applock-inner">
+            <div class="lock-brand">FULFILL<span>X</span></div>
+            <h2 class="lock-title" id="lockTitle">Enter your PIN</h2>
+            <div class="lock-dots" id="lockDots">
+                <span class="lock-dot"></span>
+                <span class="lock-dot"></span>
+                <span class="lock-dot"></span>
+                <span class="lock-dot"></span>
+            </div>
+            <div class="lock-error" id="lockError" role="status" aria-live="polite"></div>
+            <div class="lock-pad">
+                <button class="lock-key" onclick="app.lockPadPress(1)">1</button>
+                <button class="lock-key" onclick="app.lockPadPress(2)">2</button>
+                <button class="lock-key" onclick="app.lockPadPress(3)">3</button>
+                <button class="lock-key" onclick="app.lockPadPress(4)">4</button>
+                <button class="lock-key" onclick="app.lockPadPress(5)">5</button>
+                <button class="lock-key" onclick="app.lockPadPress(6)">6</button>
+                <button class="lock-key" onclick="app.lockPadPress(7)">7</button>
+                <button class="lock-key" onclick="app.lockPadPress(8)">8</button>
+                <button class="lock-key" onclick="app.lockPadPress(9)">9</button>
+                <span class="lock-key lock-key-empty"></span>
+                <button class="lock-key" onclick="app.lockPadPress(0)">0</button>
+                <button class="lock-key lock-key-fn" aria-label="Delete" onclick="app.lockPadDelete()"><i class="ph ph-backspace"></i></button>
+            </div>
+            <button class="lock-faceid-btn" id="lockFaceBtn" hidden onclick="app.lockTryFaceID()">
+                <i class="ph ph-scan"></i> Unlock with Face ID
+            </button>
+            <button class="lock-forgot" id="lockForgot" hidden onclick="app.lockForgotPin()">Forgot PIN?</button>
+        </div>
+    </div>
+
+    <!-- Recovery code reveal (shown once at setup; only its hash is stored). -->
+    <div class="applock-overlay" id="recoveryShow" aria-hidden="true">
+        <div class="applock-inner">
+            <i class="ph ph-key lock-icon-lg"></i>
+            <h2 class="lock-title">Save your recovery code</h2>
+            <p class="lock-sub">If you forget your PIN, this code is the only way back in without erasing your data. Write it down and keep it somewhere safe — it won’t be shown again.</p>
+            <div class="recovery-code" id="recoveryCodeText">FULF-XXXX-XXXX</div>
+            <button class="lock-primary-btn" onclick="app._recoverySaved()">I’ve saved it</button>
+        </div>
+    </div>
+
+    <!-- Forgot PIN → recovery-code entry → set new PIN (data stays intact). -->
+    <div class="applock-overlay" id="recoveryEntry" aria-hidden="true">
+        <div class="applock-inner">
+            <i class="ph ph-lock-key-open lock-icon-lg"></i>
+            <h2 class="lock-title">Enter recovery code</h2>
+            <p class="lock-sub">Enter the code you saved when you turned on App Lock, then set a new PIN. Your data won’t be touched.</p>
+            <input class="recovery-input" id="recoveryInput" placeholder="FULF-XXXX-XXXX"
+                   autocapitalize="characters" autocomplete="off" spellcheck="false" inputmode="text">
+            <div class="lock-error" id="recoveryError" role="status" aria-live="polite"></div>
+            <button class="lock-primary-btn" onclick="app._recoverySubmit()">Continue</button>
+            <button class="lock-forgot" onclick="app._recoveryCancel()">Back</button>
+            <button class="lock-danger-link" onclick="app._lockResetApp()">Lost your code? Reset app</button>
+        </div>
+    </div>
+
+    <!-- Backup nudge shown right after enabling the lock. -->
+    <div class="applock-overlay" id="lockBackupNudge" aria-hidden="true">
+        <div class="applock-inner">
+            <i class="ph ph-shield-check lock-icon-lg"></i>
+            <h2 class="lock-title">App Lock is on</h2>
+            <p class="lock-sub">Save a backup now so you can restore your data on a new device — or if you ever have to reset the app.</p>
+            <button class="lock-primary-btn" onclick="app._nudgeExport()">Export a backup</button>
+            <button class="lock-forgot" onclick="app._nudgeLater()">Maybe later</button>
+        </div>
+    </div>
+
     <script src="js/data.js"></script>
     <script src="js/journals.js"></script>
     <script src="js/habits.js"></script>
@@ -451,6 +561,7 @@
     <script src="js/insights.js"></script>
     <script src="js/onboarding.js"></script>
     <script src="js/backup.js"></script>
+    <script src="js/applock.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

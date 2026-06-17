@@ -1114,6 +1114,174 @@ textarea:focus {
 }
 .set-about-val { color: var(--t3); }
 
+/* Secondary sub-text inside a settings row (e.g. "Require a PIN to open…") */
+.set-row-sub {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12px;
+    color: var(--t3);
+    margin-top: 2px;
+}
+
+/* Tappable link-style row (e.g. Change PIN) */
+.set-link-row {
+    width: 100%;
+    display: flex; align-items: center; justify-content: space-between;
+    background: transparent; border: none;
+    padding: 12px 0; margin: 0;
+    border-top: 1px solid var(--hairline);
+    cursor: pointer;
+    font-family: 'Fredoka', sans-serif; font-size: 14px; font-weight: 500; color: var(--t1);
+}
+.set-link-row .set-link-label { display: flex; align-items: center; gap: 12px; }
+.set-link-row .set-link-label i { font-size: 20px; color: var(--accent); width: 24px; text-align: center; }
+.set-link-row > i { color: var(--t3); font-size: 16px; }
+.set-link-row:active { opacity: .6; }
+
+/* ── APP LOCK overlays (privacy gate — NOT encryption) ────────────────────── */
+.applock-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 1000;            /* outermost — above onboarding (200) and lightbox (300) */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 28px calc(28px + env(safe-area-inset-bottom));
+}
+.applock-overlay.active { display: flex; }
+/* Pre-paint gate: when armed, keep the app hidden until boot() shows the lock
+   screen (.active) and a successful unlock removes this class. Prevents any
+   flash of app content on launch. The lock pad itself is shown via .active so
+   it can be toggled cleanly during the Forgot-PIN / recovery flows. */
+html.applock-armed #appContainer { visibility: hidden; }
+
+.applock-inner {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.lock-brand {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 16px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--brand-text);
+    margin-bottom: 26px;
+}
+.lock-brand span {
+    color: var(--brand-x-text); background: var(--brand-x-bg);
+    padding: 2px 9px; border-radius: 8px; margin-left: 2px;
+}
+
+.lock-icon-lg { font-size: 46px; color: var(--accent); margin-bottom: 18px; }
+
+.lock-title {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 21px; font-weight: 700; color: var(--t1);
+    margin-bottom: 8px;
+}
+.lock-sub {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px; color: var(--t2); line-height: 1.5;
+    margin-bottom: 22px;
+}
+.lock-error {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px; color: var(--accent); min-height: 18px; margin-top: 4px;
+}
+
+.lock-dots { display: flex; gap: 18px; margin: 22px 0 6px; }
+.lock-dot {
+    width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid var(--t3); background: transparent;
+    transition: background .12s, border-color .12s, transform .12s;
+}
+.lock-dot.filled { background: var(--accent); border-color: var(--accent); }
+.lock-dots.shake { animation: lockShake .4s ease; }
+@keyframes lockShake {
+    0%,100% { transform: translateX(0); }
+    20%,60% { transform: translateX(-8px); }
+    40%,80% { transform: translateX(8px); }
+}
+
+.lock-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 26px;
+    width: 100%;
+    max-width: 280px;
+}
+.lock-key {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--field);
+    font-family: 'Fredoka', sans-serif;
+    font-size: 26px; font-weight: 400; color: var(--t1);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .12s, color .12s, transform .08s;
+    -webkit-tap-highlight-color: transparent;
+}
+.lock-key:active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); transform: scale(.96); }
+.lock-key-empty { background: transparent; border: none; cursor: default; }
+.lock-key-fn { background: transparent; border: none; font-size: 24px; color: var(--t2); }
+.lock-key-fn:active { background: var(--field); color: var(--t1); transform: none; }
+
+.lock-faceid-btn {
+    margin-top: 26px;
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 11px 18px; border-radius: 999px;
+    border: 1px solid var(--accent-border); background: var(--accent-soft);
+    font-family: 'Fredoka', sans-serif; font-size: 14px; font-weight: 500; color: var(--accent);
+    cursor: pointer;
+}
+.lock-faceid-btn i { font-size: 18px; }
+
+.lock-forgot {
+    margin-top: 18px;
+    background: transparent; border: none;
+    font-family: 'Fredoka', sans-serif; font-size: 13.5px; color: var(--t2);
+    cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+}
+
+.lock-primary-btn {
+    width: 100%; margin-top: 24px;
+    padding: 14px; border-radius: 14px; border: none;
+    background: var(--accent); color: var(--on-accent);
+    font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 500;
+    cursor: pointer;
+}
+.lock-primary-btn:active { opacity: .9; }
+
+.lock-danger-link {
+    margin-top: 16px;
+    background: transparent; border: none;
+    font-family: 'Fredoka', sans-serif; font-size: 13px; color: var(--t3);
+    cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+}
+
+.recovery-code {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 24px; font-weight: 700; letter-spacing: 2px; color: var(--t1);
+    background: var(--field); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 18px; margin: 6px 0;
+    width: 100%; word-break: break-all;
+}
+
+.recovery-input {
+    width: 100%; margin-top: 4px;
+    padding: 14px 16px; border-radius: 14px;
+    border: 1px solid var(--border); background: var(--field);
+    font-family: 'Baloo 2', sans-serif; font-size: 18px; font-weight: 600;
+    letter-spacing: 1.5px; text-align: center; color: var(--t1);
+}
+.recovery-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
 .settings-overlay .scrollable-content { padding: 16px; }
 
 /* ── PHASE 4: GOAL REVIEW ────────────────────────────────── */

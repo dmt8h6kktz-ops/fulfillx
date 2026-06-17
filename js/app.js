@@ -151,6 +151,7 @@ Object.assign(app, {
         document.getElementById('settings').classList.add('active');
         this.updateThemeButtons();
         this.renderReminders();
+        this.renderSecurity();
         this.renderCustomizationEditor();
         this.renderToolboxCustomizer();
         this.renderBackup();
@@ -254,4 +255,6 @@ Object.assign(app, {
 
 });
 
-document.addEventListener('DOMContentLoaded', () => app.init());
+// App Lock is the OUTERMOST launch gate: boot() shows the lock screen first
+// when armed and only runs init() after unlock (see js/applock.js).
+document.addEventListener('DOMContentLoaded', () => app.boot());
