@@ -1062,6 +1062,24 @@ textarea:focus {
     margin-bottom: 8px;
 }
 
+/* Collapsible dropdown subsection (e.g. Customize journals / Toolbox).
+   Collapsed by default; the <details open> attribute drives the caret. */
+.set-accordion { border-top: 1px solid var(--hairline); }
+.set-accordion:first-of-type { border-top: none; }
+.set-accordion-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; cursor: pointer; list-style: none;
+    font-family: 'Fredoka', sans-serif; font-size: 14px; font-weight: 500; color: var(--t1);
+    -webkit-tap-highlight-color: transparent;
+}
+.set-accordion-head::-webkit-details-marker { display: none; }
+.set-accordion-head > span { display: flex; align-items: center; gap: 12px; }
+.set-accordion-head > span > i { font-size: 20px; color: var(--accent); width: 24px; text-align: center; }
+.set-accordion-head:active { opacity: .6; }
+.set-accordion-caret { color: var(--t3); font-size: 16px; transition: transform .2s ease; }
+.set-accordion[open] .set-accordion-caret { transform: rotate(180deg); }
+.set-accordion-body { padding-bottom: 8px; }
+
 /* Reminder rows (Notifications section) */
 .set-reminder-row {
     display: flex;

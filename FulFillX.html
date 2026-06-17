@@ -176,29 +176,43 @@
                 <div class="settings-section" id="custSection">
                     <div class="settings-section-label">Customize</div>
 
-                    <div class="set-sub-label">Journals</div>
-                    <div class="cust-journal-block">
-                        <div class="cust-journal-header">
-                            <span class="cust-journal-name">Morning 🌅</span>
-                            <button class="cust-reset-btn" onclick="app.resetJournal('morning')">Reset</button>
-                        </div>
-                        <div id="cust-morning-list"></div>
-                        <button class="add-widget-btn" onclick="app.showAddWidget('morning')">+ Add widget</button>
-                    </div>
+                    <details class="set-accordion">
+                        <summary class="set-accordion-head">
+                            <span><i class="ph ph-notebook"></i> Customize journals</span>
+                            <i class="ph ph-caret-down set-accordion-caret"></i>
+                        </summary>
+                        <div class="set-accordion-body">
+                            <div class="cust-journal-block">
+                                <div class="cust-journal-header">
+                                    <span class="cust-journal-name">Morning 🌅</span>
+                                    <button class="cust-reset-btn" onclick="app.resetJournal('morning')">Reset</button>
+                                </div>
+                                <div id="cust-morning-list"></div>
+                                <button class="add-widget-btn" onclick="app.showAddWidget('morning')">+ Add widget</button>
+                            </div>
 
-                    <div class="cust-journal-block">
-                        <div class="cust-journal-header">
-                            <span class="cust-journal-name">Evening 🌙</span>
-                            <button class="cust-reset-btn" onclick="app.resetJournal('evening')">Reset</button>
+                            <div class="cust-journal-block">
+                                <div class="cust-journal-header">
+                                    <span class="cust-journal-name">Evening 🌙</span>
+                                    <button class="cust-reset-btn" onclick="app.resetJournal('evening')">Reset</button>
+                                </div>
+                                <div id="cust-evening-list"></div>
+                                <button class="add-widget-btn" onclick="app.showAddWidget('evening')">+ Add widget</button>
+                            </div>
                         </div>
-                        <div id="cust-evening-list"></div>
-                        <button class="add-widget-btn" onclick="app.showAddWidget('evening')">+ Add widget</button>
-                    </div>
+                    </details>
 
-                    <div class="set-sub-label" style="margin-top:16px">Toolbox</div>
-                    <div class="cust-journal-block">
-                        <div id="cust-toolbox-list"></div>
-                    </div>
+                    <details class="set-accordion">
+                        <summary class="set-accordion-head">
+                            <span><i class="ph ph-toolbox"></i> Customize Toolbox</span>
+                            <i class="ph ph-caret-down set-accordion-caret"></i>
+                        </summary>
+                        <div class="set-accordion-body">
+                            <div class="cust-journal-block">
+                                <div id="cust-toolbox-list"></div>
+                            </div>
+                        </div>
+                    </details>
                 </div>
 
                 <!-- SECURITY (Build 2 — App Lock) -->
