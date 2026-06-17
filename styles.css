@@ -1053,6 +1053,67 @@ textarea:focus {
     font-weight: 400;
 }
 
+/* Sub-heading inside a grouped settings card (e.g. Journals / Toolbox) */
+.set-sub-label {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--t2);
+    margin-bottom: 8px;
+}
+
+/* Reminder rows (Notifications section) */
+.set-reminder-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+}
+.set-reminder-row + .set-reminder-row { border-top: 1px solid var(--hairline); }
+.set-reminder-info { display: flex; align-items: flex-start; gap: 12px; }
+.set-reminder-info > i { font-size: 20px; color: var(--accent); width: 24px; text-align: center; line-height: 1; margin-top: 2px; }
+.set-reminder-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--t1);
+    margin-bottom: 6px;
+}
+.set-reminder-time {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    color: var(--t2);
+    background: var(--field);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 9px;
+    accent-color: var(--accent);
+}
+.set-reminder-row.disabled .set-reminder-time { opacity: .45; pointer-events: none; }
+
+/* Pill switch (reuses onboarding switch geometry, theme tokens) */
+.set-switch {
+    position: relative; width: 42px; height: 24px; border-radius: 999px;
+    background: var(--field); border: 1px solid var(--border); flex-shrink: 0;
+    padding: 0; cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+.set-switch-knob {
+    position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--t3); transition: transform .18s, background .18s;
+}
+.set-switch.on { background: var(--accent); border-color: var(--accent); }
+.set-switch.on .set-switch-knob { transform: translateX(18px); background: var(--on-accent); }
+
+/* About rows */
+.set-about-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0;
+    font-family: 'Fredoka', sans-serif; font-size: 14px; color: var(--t1);
+}
+.set-about-val { color: var(--t3); }
+
 .settings-overlay .scrollable-content { padding: 16px; }
 
 /* ── PHASE 4: GOAL REVIEW ────────────────────────────────── */

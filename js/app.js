@@ -1,5 +1,8 @@
 // js/app.js — bootstrap, navigation, settings, theme; runs on DOMContentLoaded
 
+// App version surfaced in Settings → About (also read by backup.js for metadata).
+window.APP_VERSION = window.APP_VERSION || '1.3.0';
+
 Object.assign(app, {
     init() {
         // First-launch onboarding gate — runs before ANY default seeding so the
@@ -8,6 +11,7 @@ Object.assign(app, {
         if (this.maybeStartOnboarding()) return;
         this.migrateV16Config();     // idempotent — safe on every load
         this.migrateToolboxConfig(); // idempotent — seeds order/hidden
+        this.migrateReminders();     // idempotent — splits legacy daily reminder
         this.getConfig();
         this.getHabits();
         this.initHistory();
@@ -146,9 +150,12 @@ Object.assign(app, {
     openSettings() {
         document.getElementById('settings').classList.add('active');
         this.updateThemeButtons();
+        this.renderReminders();
         this.renderCustomizationEditor();
         this.renderToolboxCustomizer();
         this.renderBackup();
+        const ver = document.getElementById('about-version');
+        if (ver) ver.textContent = window.APP_VERSION || '—';
     },
 
     closeSettings() {
@@ -165,6 +172,84 @@ Object.assign(app, {
         ['light', 'system', 'dark'].forEach(t => {
             document.getElementById('theme-' + t).classList.toggle('active', t === saved);
         });
+    },
+
+    /* ── SESSION REMINDERS (Morning / Evening) ─────────────
+       State keys: fulfillx.morningReminder, fulfillx.eveningReminder, each
+       { enabled:bool, time:'HH:MM' }. The legacy single key fulfillx.dailyReminder
+       (created by onboarding, default 20:00) is migrated into the evening reminder
+       and preserved on disk for safety. Scheduling reuses the existing 30s reminder
+       poller in todo.js (see _checkSessionReminders). */
+    _reminderKey(session) {
+        return session === 'morning' ? 'fulfillx.morningReminder' : 'fulfillx.eveningReminder';
+    },
+
+    _reminderDefault(session) {
+        return session === 'morning'
+            ? { enabled: false, time: '08:00' }
+            : { enabled: false, time: '21:00' };
+    },
+
+    _getReminder(session) {
+        const def = this._reminderDefault(session);
+        try {
+            const raw = JSON.parse(localStorage.getItem(this._reminderKey(session)));
+            return raw && typeof raw === 'object' ? Object.assign({}, def, raw) : def;
+        } catch (_) { return def; }
+    },
+
+    _setReminder(session, rem) {
+        localStorage.setItem(this._reminderKey(session), JSON.stringify(rem));
+    },
+
+    migrateReminders() {
+        const hasMorning = localStorage.getItem('fulfillx.morningReminder') !== null;
+        const hasEvening = localStorage.getItem('fulfillx.eveningReminder') !== null;
+        if (hasMorning && hasEvening) return; // already split — nothing to do
+
+        // Legacy single daily reminder (onboarding-created). Default time was 20:00,
+        // i.e. an evening nudge — so it maps onto the Evening reminder.
+        let legacy = null;
+        try { legacy = JSON.parse(localStorage.getItem('fulfillx.dailyReminder')); } catch (_) {}
+
+        if (!hasMorning) {
+            // Morning starts off by default; don't borrow the legacy (evening) time.
+            this._setReminder('morning', this._reminderDefault('morning'));
+        }
+        if (!hasEvening) {
+            const evening = (legacy && typeof legacy === 'object')
+                ? { enabled: !!legacy.enabled, time: legacy.time || '21:00' }
+                : this._reminderDefault('evening');
+            this._setReminder('evening', evening);
+        }
+        // Legacy key is intentionally left in place (additive migration / rollback safety).
+    },
+
+    renderReminders() {
+        ['morning', 'evening'].forEach(session => {
+            const rem  = this._getReminder(session);
+            const row  = document.getElementById('rem-row-' + session);
+            const sw   = document.getElementById('rem-switch-' + session);
+            const time = document.getElementById('rem-time-' + session);
+            if (row)  row.classList.toggle('disabled', !rem.enabled);
+            if (sw)  { sw.classList.toggle('on', rem.enabled); sw.setAttribute('aria-checked', String(rem.enabled)); }
+            if (time) time.value = rem.time;
+        });
+    },
+
+    toggleReminder(session) {
+        const rem = this._getReminder(session);
+        rem.enabled = !rem.enabled;
+        this._setReminder(session, rem);
+        if (rem.enabled) this._requestNotificationPermission();
+        this.renderReminders();
+    },
+
+    setReminderTime(session, value) {
+        if (!value) return;
+        const rem = this._getReminder(session);
+        rem.time = value;
+        this._setReminder(session, rem);
     },
 
 });

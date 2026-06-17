@@ -122,6 +122,8 @@
                 <div style="width:40px"></div>
             </div>
             <div class="scrollable-content">
+
+                <!-- APPEARANCE -->
                 <div class="settings-section">
                     <div class="settings-section-label">Appearance</div>
                     <div class="theme-options">
@@ -130,9 +132,41 @@
                         <button class="theme-btn" id="theme-dark" onclick="app.setTheme('dark')">Dark</button>
                     </div>
                 </div>
-                <div class="settings-section" id="custSection">
-                    <div class="settings-section-label">Customize journals</div>
 
+                <!-- NOTIFICATIONS — Morning + Evening session reminders (independent) -->
+                <div class="settings-section">
+                    <div class="settings-section-label">Notifications</div>
+                    <div class="set-reminder-row" id="rem-row-morning">
+                        <div class="set-reminder-info">
+                            <i class="ph ph-sun"></i>
+                            <div>
+                                <div class="set-reminder-title">Morning reminder</div>
+                                <input type="time" class="set-reminder-time" id="rem-time-morning" value="08:00"
+                                       onchange="app.setReminderTime('morning', this.value)" aria-label="Morning reminder time">
+                            </div>
+                        </div>
+                        <button class="set-switch" id="rem-switch-morning" role="switch" aria-label="Toggle morning reminder"
+                                onclick="app.toggleReminder('morning')"><span class="set-switch-knob"></span></button>
+                    </div>
+                    <div class="set-reminder-row" id="rem-row-evening">
+                        <div class="set-reminder-info">
+                            <i class="ph ph-moon"></i>
+                            <div>
+                                <div class="set-reminder-title">Evening reminder</div>
+                                <input type="time" class="set-reminder-time" id="rem-time-evening" value="21:00"
+                                       onchange="app.setReminderTime('evening', this.value)" aria-label="Evening reminder time">
+                            </div>
+                        </div>
+                        <button class="set-switch" id="rem-switch-evening" role="switch" aria-label="Toggle evening reminder"
+                                onclick="app.toggleReminder('evening')"><span class="set-switch-knob"></span></button>
+                    </div>
+                </div>
+
+                <!-- CUSTOMIZE -->
+                <div class="settings-section" id="custSection">
+                    <div class="settings-section-label">Customize</div>
+
+                    <div class="set-sub-label">Journals</div>
                     <div class="cust-journal-block">
                         <div class="cust-journal-header">
                             <span class="cust-journal-name">Morning 🌅</span>
@@ -150,17 +184,18 @@
                         <div id="cust-evening-list"></div>
                         <button class="add-widget-btn" onclick="app.showAddWidget('evening')">+ Add widget</button>
                     </div>
-                </div>
 
-                <div class="settings-section">
-                    <div class="settings-section-label">Customize Toolbox</div>
+                    <div class="set-sub-label" style="margin-top:16px">Toolbox</div>
                     <div class="cust-journal-block">
                         <div id="cust-toolbox-list"></div>
                     </div>
                 </div>
 
+                <!-- INSERTION POINT: SECURITY section (Build 2 — App Lock) slots in here, between CUSTOMIZE and YOUR DATA -->
+
+                <!-- YOUR DATA -->
                 <div class="settings-section">
-                    <div class="settings-section-label">Backup &amp; Restore</div>
+                    <div class="settings-section-label">Your data</div>
                     <p class="backup-help">Export saves a single file with everything on this device — entries, habits, Toolbox setup, journal customizations, settings, theme, and photos. Import restores a backup file onto this device.</p>
                     <div class="backup-actions">
                         <button class="backup-btn" onclick="app.exportBackup()"><i class="ph ph-download-simple"></i> Export backup</button>
@@ -169,6 +204,14 @@
                     <div class="backup-status" id="backupStatus" role="status" aria-live="polite"></div>
                     <input type="file" id="backupFileInput" accept="application/json,.json" style="display:none" onchange="app.onBackupFileChosen(this)">
                 </div>
+
+                <!-- ABOUT -->
+                <div class="settings-section">
+                    <div class="settings-section-label">About</div>
+                    <div class="set-about-row"><span>Version</span><span class="set-about-val" id="about-version">—</span></div>
+                    <!-- INSERTION POINT: "Replay tour" row (Build 3) slots in here -->
+                </div>
+
             </div>
         </div>
 

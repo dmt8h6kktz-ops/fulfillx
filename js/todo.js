@@ -57,7 +57,34 @@ Object.assign(app, {
                     });
                 });
             });
+
+            // Daily session reminders (Morning / Evening) — same poller, same
+            // notification mechanism; deduped per day via _firedReminders.
+            this._checkSessionReminders(hhmm, today);
         }, 30000);
+    },
+
+    _checkSessionReminders(hhmm, today) {
+        if (typeof this._getReminder !== 'function') return;
+        ['morning', 'evening'].forEach(session => {
+            const rem = this._getReminder(session);
+            if (!rem.enabled || !rem.time || hhmm !== rem.time) return;
+            const key = `session-${session}-${today}-${rem.time}`;
+            if (this._firedReminders.has(key)) return;
+            this._firedReminders.add(key);
+            this._fireSessionReminder(session);
+        });
+    },
+
+    _fireSessionReminder(session) {
+        const msg = session === 'morning'
+            ? 'Good morning — time for your morning check-in.'
+            : 'Time for your evening reflection.';
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('FulFillX', { body: msg, icon: '' });
+        } else {
+            this.showToast('🔔 ' + msg);
+        }
     },
 
     _computeFireTime(timeStr, lead) {
