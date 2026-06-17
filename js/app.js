@@ -5,6 +5,11 @@ window.APP_VERSION = window.APP_VERSION || '1.3.0';
 
 Object.assign(app, {
     init() {
+        // First-run feature tour gate — runs BEFORE onboarding (launch order:
+        // [App Lock] → tour → onboarding → home). Returns true only on a genuine
+        // fresh install; init resumes via _tourComplete() → this.init(), which
+        // then hands off to onboarding. Existing users are auto-marked tourSeen.
+        if (this.maybeStartTour()) return;
         // First-launch onboarding gate — runs before ANY default seeding so the
         // existing-user check can't misfire. Returns true only on a genuine fresh
         // install (onboarding shown); init resumes via obFinish() → this.init().

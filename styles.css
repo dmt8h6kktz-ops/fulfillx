@@ -1300,6 +1300,104 @@ html.applock-armed #appContainer { visibility: hidden; }
 }
 .recovery-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
+/* ── FEATURE TOUR (first-run + replay) ────────────────────────────────────── */
+.tour-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 250;            /* above onboarding (200), below App Lock (1000) */
+    flex-direction: column;
+}
+.tour-overlay.active { display: flex; }
+
+.tour-skip {
+    position: absolute;
+    top: calc(20px + env(safe-area-inset-top));
+    right: 18px;
+    z-index: 2;
+    background: transparent; border: none;
+    font-family: 'Fredoka', sans-serif; font-size: 14px; color: var(--t2);
+    cursor: pointer; padding: 6px 8px;
+}
+
+.tour-viewport { flex: 1; overflow: hidden; position: relative; min-height: 0; }
+.tour-track {
+    display: flex;
+    height: 100%;
+    transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+    will-change: transform;
+}
+.tour-slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: calc(56px + env(safe-area-inset-top)) 34px 16px;
+}
+
+.tour-preview {
+    width: min(64%, 232px);
+    aspect-ratio: 200 / 250;
+    margin-bottom: 30px;
+    filter: drop-shadow(var(--shadow));
+}
+.tour-svg { width: 100%; height: 100%; display: block; }
+/* SVG previews are coloured only with theme tokens (no raw colors). */
+.tp-screen { fill: var(--surface-strong); stroke: var(--border); stroke-width: 1.5; }
+.tp-card   { fill: var(--field); }
+.tp-bar    { fill: var(--field); }
+.tp-line   { fill: var(--hairline); }
+.tp-accent { fill: var(--accent); }
+.tp-soft   { fill: var(--accent-soft); }
+
+.tour-copy { max-width: 340px; }
+.tour-eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: 'Baloo 2', sans-serif; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent);
+    margin-bottom: 10px;
+}
+.tour-eyebrow i { font-size: 16px; }
+.tour-title {
+    font-family: 'Baloo 2', sans-serif; font-size: 26px; font-weight: 700;
+    color: var(--t1); margin-bottom: 10px; line-height: 1.2;
+}
+.tour-desc {
+    font-family: 'Fredoka', sans-serif; font-size: 15px; font-weight: 300;
+    color: var(--t2); line-height: 1.5;
+}
+.tour-highlight {
+    display: inline-flex; align-items: center; gap: 9px; flex-wrap: wrap;
+    justify-content: center; margin-top: 16px;
+    font-family: 'Fredoka', sans-serif; font-size: 13.5px; font-weight: 500; color: var(--t1);
+}
+.tour-badge {
+    display: inline-block;
+    background: var(--accent); color: var(--on-accent);
+    font-family: 'Baloo 2', sans-serif; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .5px;
+    padding: 3px 10px; border-radius: 999px;
+}
+
+.tour-foot { flex-shrink: 0; padding: 10px 28px calc(26px + env(safe-area-inset-bottom)); }
+.tour-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 18px; }
+.tour-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--t3); opacity: .4; border: none; padding: 0; cursor: pointer;
+    transition: opacity .2s, width .2s, background .2s;
+}
+.tour-dot.active { opacity: 1; width: 22px; border-radius: 999px; background: var(--accent); }
+.tour-next {
+    width: 100%; padding: 15px; border-radius: 16px; border: none;
+    background: var(--accent); color: var(--on-accent);
+    font-family: 'Fredoka', sans-serif; font-size: 16px; font-weight: 500;
+    cursor: pointer;
+}
+.tour-next:active { opacity: .9; }
+
 .settings-overlay .scrollable-content { padding: 16px; }
 
 /* ── PHASE 4: GOAL REVIEW ────────────────────────────────── */

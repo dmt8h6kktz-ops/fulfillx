@@ -262,7 +262,10 @@
                 <div class="settings-section">
                     <div class="settings-section-label">About</div>
                     <div class="set-about-row"><span>Version</span><span class="set-about-val" id="about-version">—</span></div>
-                    <!-- INSERTION POINT: "Replay tour" row (Build 3) slots in here -->
+                    <button class="set-link-row" onclick="app.replayTour()">
+                        <span class="set-link-label"><i class="ph ph-play-circle"></i> Replay tour</span>
+                        <i class="ph ph-caret-right"></i>
+                    </button>
                 </div>
 
             </div>
@@ -495,6 +498,19 @@
         </div>
     </div>
 
+    <!-- ── FEATURE TOUR (first-run + replay) ──────────────────────────────── -->
+    <!-- Stylized previews are inline SVG (no CDN); slides injected by tour.js. -->
+    <div class="tour-overlay" id="tour" aria-hidden="true">
+        <button class="tour-skip" id="tourSkip" onclick="app.tourSkip()">Skip</button>
+        <div class="tour-viewport" id="tourViewport">
+            <div class="tour-track" id="tourTrack"></div>
+        </div>
+        <div class="tour-foot">
+            <div class="tour-dots" id="tourDots"></div>
+            <button class="tour-next" id="tourNext" onclick="app.tourNext()">Next</button>
+        </div>
+    </div>
+
     <!-- ── APP LOCK overlays (privacy gate, NOT encryption) ───────────────── -->
     <!-- Launch / set / confirm / verify PIN pad. Outermost gate; reused in-app. -->
     <div class="applock-overlay" id="appLock" aria-hidden="true">
@@ -574,6 +590,7 @@
     <script src="js/toolbox.js"></script>
     <script src="js/insights.js"></script>
     <script src="js/onboarding.js"></script>
+    <script src="js/tour.js"></script>
     <script src="js/backup.js"></script>
     <script src="js/applock.js"></script>
     <script src="js/app.js"></script>
